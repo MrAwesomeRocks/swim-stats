@@ -31,7 +31,6 @@
  * SOFTWARE.
  *
  */
-
 #include "mpu.hpp"
 
 #include "config.h"

@@ -1,8 +1,11 @@
 #include "config.h"
 #include "mpu.hpp"
+#include "server.hpp"
 #include "web.hpp"
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
+#include <LittleFS.h>
 #include <pgmspace.h>
 #include <WiFi.h>
 
@@ -68,9 +71,32 @@ setup()
     wifi_print_status();
 
     // Sync time
+    log_i("Syncing time with NTP...");
     configTime(
         NTP_GMT_OFFSET_sec, NTP_DST_OFFSET_sec, NTP_SERVER_1, NTP_SERVER_2, NTP_SERVER_3
     );
+
+    // Initialize LittleFS
+    log_i("Mounting LittleFS...");
+
+    if (!LittleFS.begin()) {
+        log_e("Error mounting LittleFS, rebooting in 3 seconds...");
+        delay(3000);
+        ESP.restart();
+    }
+
+    log_i("LittleFS mounted successfully!");
+
+    // Setup web server
+    log_i("Starting web server...");
+
+    if (!web_server_setup()) {
+        log_e("Error starting web server, rebooting in 3 seconds...");
+        delay(3000);
+        ESP.restart();
+    }
+
+    log_i("Web server started successfully");
 
 #ifndef TEST_WEBSERVER
     // Configure the MPU6050
@@ -118,6 +144,24 @@ loop()
                 break;
         }
     }
+
+    StaticJsonDocument<192> doc;
+
+    JsonArray accelReal = doc.createNestedArray("accel");
+    accelReal.add((double)esp_random());
+    accelReal.add((double)esp_random());
+    accelReal.add((double)esp_random());
+
+    JsonArray ypr = doc.createNestedArray("ypr");
+    ypr.add((double)esp_random());
+    ypr.add((double)esp_random());
+    ypr.add((double)esp_random());
+
+    doc["temp"] = 65.6;
+
+    web_server_send_event("mpuData", doc);
+
+    delay(1000);
 
 #ifndef TEST_WEBSERVER
     static unsigned long poll_miss_count = 0;

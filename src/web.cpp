@@ -28,6 +28,8 @@
  * SOFTWARE.
  *
  */
+#include "web.hpp"
+
 #include <Arduino.h>
 #include <WiFiManager.h>
 
