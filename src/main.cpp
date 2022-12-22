@@ -1,7 +1,10 @@
 #include "config.h"
 #include "mpu.hpp"
+#include "web.hpp"
 
 #include <Arduino.h>
+#include <pgmspace.h>
+#include <WiFi.h>
 
 // Store whether our LED is on or not so we can blink it
 bool blinkState = false;
@@ -11,10 +14,56 @@ bool blinkState = false;
 // ================================================================
 
 void
+print_chip_debug_info()
+{
+    // Chip info
+    log_d("%s v%d", ESP.getChipModel(), ESP.getChipRevision());
+    log_d("%u x CPU @ %lu MHz", ESP.getChipCores(), ESP.getCpuFreqMHz());
+    log_d(
+        "%.2f MB flash @ %lu MHz, mode: %#x", ESP.getFlashChipSize() / 1024.0 / 1024.0,
+        ESP.getFlashChipSpeed() / 1000 / 1000, ESP.getFlashChipMode()
+    );
+    log_d("Chip ID: %llX", ESP.getEfuseMac());
+
+    // Sketch info
+    log_d("Sketch MD5: %s", ESP.getSketchMD5().c_str());
+    log_d(
+        "Free sketch space: %lu B/%lu B", ESP.getFreeSketchSpace(),
+        ESP.getFreeSketchSpace() + ESP.getSketchSize()
+    );
+
+    // Memory info
+    log_d("Free heap: %lu B/%lu B", ESP.getHeapSize(), ESP.getHeapSize());
+    log_d("Free PSRAM: %lu B/%lu B", ESP.getFreePsram(), ESP.getPsramSize());
+
+    // Library versions
+    log_d("ESP-IDF %s", ESP.getSdkVersion());
+    log_d(
+        "Arduino v%u.%u.%u", ESP_ARDUINO_VERSION_MAJOR, ESP_ARDUINO_VERSION_MAJOR,
+        ESP_ARDUINO_VERSION_PATCH
+    );
+    log_d("WiFiManager %s", wifi_manager_version());
+}
+
+void
 setup()
 {
     // initialize serial communication
     Serial.begin(115200);
+    Serial.setDebugOutput(true);
+
+    // Initial log
+    print_chip_debug_info();
+
+    // Connect to WiFi
+    log_i("Attempting to connect to WiFi");
+
+    if (!wifi_connect()) {
+        log_e("WiFi connection failed.");
+        ESP.restart();
+    }
+
+    log_i("Wifi successfully connected!");
 
 #ifndef TEST_WEBSERVER
     // Configure the MPU6050
@@ -23,6 +72,7 @@ setup()
 
     // configure LED for output
     pinMode(LED_PIN, OUTPUT);
+    digitalWrite(LED_PIN, HIGH);
 }
 
 // ================================================================
@@ -32,6 +82,26 @@ setup()
 void
 loop()
 {
+    if (Serial.available()) {
+        char cmd;
+        switch (cmd = Serial.read()) {
+            case 'c':
+                log_i("Clearing WiFi settings and rebooting in 5 seconds!");
+                delay(5000);
+                WiFi.disconnect(true, true);
+                ESP.restart();
+                break;
+
+            case 'h':
+                log_i("Commands: (c)lear wifi settings, (h)elp");
+                break;
+
+            default:
+                log_w("Unknown command '%c'", cmd);
+                break;
+        }
+    }
+
 #ifndef TEST_WEBSERVER
     static unsigned long poll_miss_count = 0;
 
@@ -95,6 +165,4 @@ loop()
         poll_miss_count++;
     }
 #endif
-
-
 }
