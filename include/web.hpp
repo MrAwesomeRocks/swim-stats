@@ -43,3 +43,8 @@ bool wifi_connect();
  * @return A string with the version info.
  */
 const char* wifi_manager_version();
+
+/**
+ * @brief Print stats about the connected WiFi network.
+ */
+void wifi_print_status();

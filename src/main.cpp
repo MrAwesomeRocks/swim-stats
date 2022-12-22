@@ -64,6 +64,7 @@ setup()
     }
 
     log_i("Wifi successfully connected!");
+    wifi_print_status();
 
 #ifndef TEST_WEBSERVER
     // Configure the MPU6050

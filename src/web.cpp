@@ -60,3 +60,61 @@ wifi_manager_version()
 {
     return WM_VERSION_STR;
 }
+
+void
+wifi_print_status()
+{
+    const char* modes[] = {"NULL", "STA", "AP", "STA+AP"};
+
+    log_d("Wifi mode: %s", modes[WiFi.getMode()]);
+
+    const char* status;
+    switch (WiFi.status()) {
+        case WL_IDLE_STATUS:
+            status = "IDLE";
+            break;
+        case WL_NO_SSID_AVAIL:
+            status = "NO SSID AVAILABLE";
+            break;
+        case WL_SCAN_COMPLETED:
+            status = "SCAN COMPLETED";
+            break;
+        case WL_CONNECTED:
+            status = "CONNECTED";
+            break;
+        case WL_CONNECT_FAILED:
+            status = "CONNECTION FAILED";
+            break;
+        case WL_CONNECTION_LOST:
+            status = "CONNECTION LOST";
+            break;
+        case WL_DISCONNECTED:
+            status = "DISCONNECTED";
+            break;
+        default:
+            status = "UNKNOWN";
+            break;
+    }
+    log_d("Status: %s", status);
+
+    log_d("Mac address: %s", WiFi.macAddress().c_str());
+
+    String ssid = WiFi.SSID();
+    log_d("SSID (%lu): %s", ssid.length(), ssid.c_str());
+
+    String pass = WiFi.psk();
+    log_d("Passphrase (%lu): %s", pass.length(), pass.c_str());
+
+    log_d("Channel: %u (primary)", WiFi.channel());
+    log_d("BSSID: %s", WiFi.BSSIDstr().c_str());
+    log_d("Strength: %d dB", WiFi.RSSI());
+
+    log_d("IPv4: %s", WiFi.localIP().toString().c_str());
+    log_d("IPv6: %s", WiFi.localIPv6().toString().c_str());
+    log_d("Gateway: %s", WiFi.gatewayIP().toString().c_str());
+    log_d("Subnet Mask: %s", WiFi.subnetMask().toString().c_str());
+    log_d("DNS: %s", WiFi.dnsIP().toString().c_str());
+
+    log_d("Broadcast IP: %s", WiFi.broadcastIP().toString().c_str());
+    log_d("Network ID: %s", WiFi.networkID().toString().c_str());
+}
