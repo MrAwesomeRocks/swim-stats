@@ -67,11 +67,10 @@ dmp_data_ready_isr()
 // ================================================================
 // ===                      INITIAL SETUP                       ===
 // ================================================================
-void
+bool
 mpu_setup()
 {
     // join I2C bus (I2Cdev library doesn't do this automatically)
-    Serial.println();
     Wire.begin();
     Wire.setClock(400000); // 400kHz I2C clock (shouldn't cause problems)
 
@@ -109,7 +108,7 @@ mpu_setup()
                 log_e("Unknown DMP error.");
                 break;
         }
-        return;
+        return false;
     }
 
     // Calibration Time: generate offsets and calibrate our MPU6050
@@ -135,7 +134,7 @@ mpu_setup()
 
     // enable Arduino interrupt detection
     log_i(
-        "Enabling interrupt detection (ESP32 external interrupt %d)...\n",
+        "Enabling interrupt detection (ESP32 external interrupt %d)...",
         digitalPinToInterrupt(INTERRUPT_PIN)
     );
     pinMode(INTERRUPT_PIN, INPUT);
@@ -148,6 +147,8 @@ mpu_setup()
 
     // get expected DMP packet size for later comparison
     packet_size = mpu.dmpGetFIFOPacketSize();
+
+    return true;
 }
 
 bool

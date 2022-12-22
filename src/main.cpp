@@ -56,24 +56,40 @@ setup()
     print_chip_debug_info();
 
     // Connect to WiFi
-    log_i("Attempting to connect to WiFi");
+    log_i("Attempting to connect to WiFi...");
 
     if (!wifi_connect()) {
-        log_e("WiFi connection failed.");
+        log_e("WiFi connection failed, rebooting in 3 seconds...");
+        delay(3000);
         ESP.restart();
     }
 
     log_i("Wifi successfully connected!");
     wifi_print_status();
 
+    // Sync time
+    configTime(
+        NTP_GMT_OFFSET_sec, NTP_DST_OFFSET_sec, NTP_SERVER_1, NTP_SERVER_2, NTP_SERVER_3
+    );
+
 #ifndef TEST_WEBSERVER
     // Configure the MPU6050
-    mpu_setup();
+    log_i("Starting MPU6050 setup...");
+
+    if (!mpu_setup()) {
+        log_e("MPU6050 setup failed, rebooting in 3 seconds...");
+        delay(3000);
+        ESP.restart();
+    }
+
+    log_i("MPU6050 setup completed successfully!");
 #endif
 
     // configure LED for output
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, HIGH);
+
+    log_i("Setup completed successfully!");
 }
 
 // ================================================================
@@ -87,8 +103,8 @@ loop()
         char cmd;
         switch (cmd = Serial.read()) {
             case 'c':
-                log_i("Clearing WiFi settings and rebooting in 5 seconds!");
-                delay(5000);
+                log_i("Clearing WiFi settings and rebooting in 3 seconds!");
+                delay(3000);
                 WiFi.disconnect(true, true);
                 ESP.restart();
                 break;

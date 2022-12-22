@@ -45,8 +45,10 @@ extern bool dmp_ready;
  * 3. Initializes the DMP.
  * 4. Calibrates the DMP.
  * 5. Attaches an ISR for data ready.
+ *
+ * @return bool Whether or not the MPU6050 intialized successfully.
  */
-void mpu_setup();
+bool mpu_setup();
 
 /**
  * @brief Poll the MPU6050 to see if data is available.
