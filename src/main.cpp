@@ -147,6 +147,7 @@ loop()
 
     StaticJsonDocument<192> doc;
 
+#ifdef TEST_WEBSERVER
     JsonArray accelReal = doc.createNestedArray("accel");
     accelReal.add((double)esp_random());
     accelReal.add((double)esp_random());
@@ -162,8 +163,7 @@ loop()
     web_server_send_event("mpuData", doc);
 
     delay(1000);
-
-#ifndef TEST_WEBSERVER
+#else
     static unsigned long poll_miss_count = 0;
 
     // if programming failed, don't try to do anything
