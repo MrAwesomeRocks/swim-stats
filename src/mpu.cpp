@@ -78,7 +78,6 @@ mpu_setup()
     // initialize device
     log_i("Initializing I2C devices...");
     mpu.initialize();
-    pinMode(INTERRUPT_PIN, INPUT);
 
     // verify connection
     log_i("Testing device connections...");
@@ -139,6 +138,7 @@ mpu_setup()
         "Enabling interrupt detection (ESP32 external interrupt %d)...\n",
         digitalPinToInterrupt(INTERRUPT_PIN)
     );
+    pinMode(INTERRUPT_PIN, INPUT);
     attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), dmp_data_ready_isr, RISING);
     mpu_int_status = mpu.getIntStatus();
 

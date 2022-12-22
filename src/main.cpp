@@ -16,8 +16,10 @@ setup()
     // initialize serial communication
     Serial.begin(115200);
 
+#ifndef TEST_WEBSERVER
     // Configure the MPU6050
     mpu_setup();
+#endif
 
     // configure LED for output
     pinMode(LED_PIN, OUTPUT);
@@ -30,6 +32,7 @@ setup()
 void
 loop()
 {
+#ifndef TEST_WEBSERVER
     static unsigned long poll_miss_count = 0;
 
     // if programming failed, don't try to do anything
@@ -91,4 +94,7 @@ loop()
     } else {
         poll_miss_count++;
     }
+#endif
+
+
 }

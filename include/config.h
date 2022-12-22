@@ -17,3 +17,8 @@
 #  define TAG "ARDUINO"
 #endif
 
+/*
+        Tests
+*/
+// Uncomment to test the web server without the MPU6050
+#define TEST_WEBSERVER
