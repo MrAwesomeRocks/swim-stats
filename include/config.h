@@ -38,4 +38,4 @@
         Tests
 */
 // Uncomment to test the web server without the MPU6050
-#define TEST_WEBSERVER
+// #define TEST_WEBSERVER

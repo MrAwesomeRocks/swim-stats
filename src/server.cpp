@@ -79,15 +79,15 @@ web_server_setup()
 
     // Handle server-side events
     events.onConnect([](AsyncEventSourceClient* client) {
-        const char* ip_str = client->client()->remoteIP().toString().c_str();
+        IPAddress ip = client->client()->localIP();
 
         if (client->lastId())
             log_i(
-                "SSE client %s reconnected. Last message received: %u", ip_str,
-                client->lastId()
+                "SSE client %s reconnected. Last message received: %u",
+                ip.toString().c_str(), client->lastId()
             );
         else
-            log_i("New SSE client: %s", ip_str);
+            log_i("New SSE client: %s", ip.toString().c_str());
 
         // send event with message {"connected":true}, id current millis
         // and set reconnect delay to 1 second
@@ -108,4 +108,5 @@ web_server_send_event(const char* name, const JsonDocument& json)
     serializeJson(json, msg);
 
     events.send(msg.c_str(), name, millis());
+    // log_d("Free heap: %lu B/%lu B", ESP.getFreeHeap(), ESP.getHeapSize());
 }

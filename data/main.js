@@ -34,9 +34,11 @@ if (!!window.EventSource) {
   source.addEventListener(
     "mpuData",
     function (e) {
-      console.log("mpuData", e.data);
+      console.log("🚀 ~ file: main.js:37 ~ e", e)
 
       const data = JSON.parse(e.data);
+      console.log("mpuData", data);
+
 
       let ypr = document.getElementById("ypr");
       if (ypr !== null) {
