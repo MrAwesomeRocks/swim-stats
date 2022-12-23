@@ -7,6 +7,13 @@
 #define LED_PIN       2  // Connected to DevKit LED
 
 /*
+        MPU config
+*/
+// Sample rate (in ms)
+// Should be a multiple of 10
+#define MPU_SAMPLE_RATE 100
+
+/*
         Logging Config
 */
 // Uncomment to use the builtin ESP-IDF logger over the Arduino one

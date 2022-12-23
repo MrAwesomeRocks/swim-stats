@@ -146,6 +146,7 @@ mpu_setup()
 
     // get expected DMP packet size for later comparison
     packet_size = mpu.dmpGetFIFOPacketSize();
+    log_d("DMP packet size: %u", packet_size);
 
     return true;
 }

@@ -183,7 +183,6 @@ loop()
 
     // read a packet from FIFO
     if (mpu_data_available()) { // Get the Latest packet
-
         /*
             YPR
         */
@@ -233,7 +232,11 @@ loop()
 
         poll_miss_count = 0;
 
-        // delay(89);
+#  if MPU_SAMPLE_RATE > 70   // We overflow the FIFO buffer and need to compensate
+        delay(MPU_SAMPLE_RATE - 11);
+#  elif MPU_SAMPLE_RATE > 10 // Default sample rate is 10ms
+        delay(MPU_SAMPLE_RATE);
+#  endif
     } else {
         poll_miss_count++;
     }
