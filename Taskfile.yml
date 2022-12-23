@@ -1,0 +1,29 @@
+version: "3"
+
+tasks:
+  build:
+    cmds:
+      - pio run
+
+  web:
+    dir: web
+    cmds:
+      - pnpm build
+      - >
+        {{if eq OS "windows"}}
+          xcopy /s /y /f dist ..\\data
+        {{else}}
+          cp -vr dist/* ../data
+        {{end}}
+
+  code:
+    cmds:
+      - pio run --target upload
+
+  fs:
+    cmds:
+      - pio run --target uploadfs --environment esp32dev
+
+  monitor:
+    cmds:
+      - pio device monitor

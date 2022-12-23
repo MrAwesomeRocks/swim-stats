@@ -32,13 +32,19 @@ print_chip_debug_info()
     // Sketch info
     log_d("Sketch MD5: %s", ESP.getSketchMD5().c_str());
     log_d(
-        "Free sketch space: %lu B/%lu B", ESP.getFreeSketchSpace(),
+        "Used sketch space: %lu B/%lu B", ESP.getSketchSize(),
         ESP.getFreeSketchSpace() + ESP.getSketchSize()
     );
 
     // Memory info
-    log_d("Free heap: %lu B/%lu B", ESP.getFreeHeap(), ESP.getHeapSize());
-    log_d("Free PSRAM: %lu B/%lu B", ESP.getFreePsram(), ESP.getPsramSize());
+    log_d(
+        "Used heap: %lu B/%lu B", ESP.getHeapSize() - ESP.getFreeHeap(),
+        ESP.getHeapSize()
+    );
+    log_d(
+        "Used PSRAM: %lu B/%lu B", ESP.getPsramSize() - ESP.getFreePsram(),
+        ESP.getPsramSize()
+    );
 
     // Library versions
     log_d("ESP-IDF %s", ESP.getSdkVersion());
@@ -97,6 +103,7 @@ setup()
     }
 
     log_i("LittleFS mounted successfully!");
+    log_d("Used LittleFS: %lu B/%lu B", LittleFS.usedBytes(), LittleFS.totalBytes());
 
     // Setup web server
     log_i("Starting web server...");

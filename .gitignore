@@ -49,3 +49,7 @@
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+# Data files need to be individually added
+data/*
+!data/.gitkeep
