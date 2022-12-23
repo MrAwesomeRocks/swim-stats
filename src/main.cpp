@@ -1,10 +1,11 @@
 #include "config.h"
+#include "connections.hpp"
 #include "mpu.hpp"
 #include "server.hpp"
-#include "connections.hpp"
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <ESPmDNS.h>
 #include <LittleFS.h>
 #include <pgmspace.h>
 #include <WiFi.h>
@@ -69,6 +70,16 @@ setup()
 
     log_i("Wifi successfully connected!");
     wifi_print_status();
+
+#ifdef USE_mDNS
+    // Start mDNS
+    log_i("Attempting to start mDNS responder");
+
+    if (mdns_setup())
+        log_i("mDNS setup successfully");
+    else
+        log_w("mDNS setup failed! Nice hostnames will not be available.");
+#endif
 
     // Sync time
     log_i("Syncing time with NTP...");

@@ -30,31 +30,74 @@
  */
 #include "connections.hpp"
 
+#include "config.h"
+
 #include <Arduino.h>
+#include <ESPmDNS.h>
 #include <WiFiManager.h>
+
+#ifdef USE_STATIC_IP
+static const IPAddress static_ip(STATIC_IP_ADDR);
+static const IPAddress static_gateway(STATIC_GATEWAY);
+static const IPAddress static_mask(STATIC_SUBNET_MASK);
+static const IPAddress static_dns(STATIC_DNS_SERVER);
+#endif
 
 bool
 wifi_connect()
 {
+#if defined(HOSTNAME_PREFIX) || defined(AP_SSID_PREFIX) || !defined(AP_PSK)
+    // Get the chip ID, we'll need it later
+    String esp32_id(WIFI_getChipId(), HEX);
+    esp32_id.toUpperCase();
+#endif
+
+    // Set up the WiFi in the mode we'll want it at the end
     WiFi.mode(WIFI_STA);
 
+    // Create our WiFi manager
     WiFiManager wm;
-
-    wm.setDarkMode(true);
-    wm.setRestorePersistent(true);
     wm.setDebugOutput(true, ARDUHAL_LOG_COLOR_D "[------][D][WiFiManager] UNKNOWN(): ");
 
-    wm.setSTAStaticIPConfig(
-        IPAddress(192, 168, 1, 150), IPAddress(192, 168, 1, 1),
-        IPAddress(255, 255, 255, 0), IPAddress(1, 1, 1, 1)
-    );
+    // Save user preferences
+    wm.setRestorePersistent(true);
+
+#ifdef USE_STATIC_IP
+    // Set a default static IP
+    wm.setSTAStaticIPConfig(static_ip, static_gateway, static_mask, static_dns);
+#endif
+
+    // Show static IP options on the config portal
     wm.setShowStaticFields(true);
     wm.setShowDnsFields(true);
 
+    // Cosmetic config portal setup
     wm.setConfigPortalTimeout(60 * 3);
+    wm.setDarkMode(true);
     wm.setScanDispPerc(true);
 
-    return wm.autoConnect();
+    // Set our hostname
+#ifdef HOSTNAME
+    wm.setHostname(HOSTNAME);
+#else
+    wm.setHostname(HOSTNAME_PREFIX + esp32_id);
+#endif
+
+    // Set the access point SSID
+#ifdef AP_SSID
+    String ap_name = AP_SSID;
+#else
+    String ap_name = AP_SSID_PREFIX + esp32_id;
+#endif
+
+    // Set the access point password
+#ifdef AP_PSK
+    String ap_psk = AP_PSK;
+#else
+    String ap_psk = esp32_id;
+#endif
+
+    return wm.autoConnect(ap_name.c_str(), ap_psk.c_str());
 }
 
 const char*
@@ -119,4 +162,25 @@ wifi_print_status()
 
     log_d("Broadcast IP: %s", WiFi.broadcastIP().toString().c_str());
     log_d("Network ID: %s", WiFi.networkID().toString().c_str());
+}
+
+bool
+mdns_setup()
+{
+    // Get chip ID
+    String esp32_id(WIFI_getChipId(), HEX);
+    esp32_id.toUpperCase();
+
+    // Create hostname
+    String hostname(HOSTNAME_PREFIX + esp32_id);
+
+    // Start mDNS
+    if (!MDNS.begin(hostname.c_str()))
+        return false;
+
+    // Add web server service
+    MDNS.addService("http", "tcp", 80);
+
+    log_i("mDNS running at %s.local", hostname.c_str());
+    return true;
 }

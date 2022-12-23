@@ -48,3 +48,10 @@ const char* wifi_manager_version();
  * @brief Print stats about the connected WiFi network.
  */
 void wifi_print_status();
+
+/**
+ * @brief Setup the mDNS responder
+ *
+ * @return bool If the setup was successful.
+ */
+bool mdns_setup();
