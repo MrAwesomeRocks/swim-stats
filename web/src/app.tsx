@@ -1,5 +1,6 @@
 import { useState, useEffect } from "preact/hooks";
 import preactLogo from "./assets/preact.svg";
+import { Temperature, Acceleration, YawPitchRoll } from "./components";
 
 export function App() {
   const [connected, setConnected] = useState(false);
@@ -8,6 +9,8 @@ export function App() {
     accel: [0, 0, 0],
     temp: 0,
   });
+
+  const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
     const sse = new EventSource("/events");
@@ -39,25 +42,30 @@ export function App() {
     return () => {
       sse.close();
     };
-  }, []);
+  }, [refresh]);
 
   return (
     <>
       <h1>{import.meta.env.VITE_APP_TITLE}</h1>
 
-      {connected ? (
-        <p style={{ color: "green" }}>Connected!</p>
-      ) : (
-        <p style={{ color: "red" }}>Disconnected!</p>
-      )}
+      <div>
+        {connected ? (
+          <p style={{ color: "green" }}>Connected!</p>
+        ) : (
+          <>
+            <p style={{ color: "red", display: "inline", marginRight: 10 }}>
+              Disconnected!
+            </p>
+            <button onClick={() => setRefresh((refresh) => !refresh)}>
+              Reconnect
+            </button>
+          </>
+        )}
+      </div>
 
-      <p>
-        YPR: {data.ypr[0]}, {data.ypr[1]}, {data.ypr[2]}
-      </p>
-      <p>
-        Accel: {data.accel[0]}, {data.accel[1]}, {data.accel[2]}
-      </p>
-      <p>Temp: {data.temp}</p>
+      <YawPitchRoll yaw={data.ypr[0]} pitch={data.ypr[1]} roll={data.ypr[2]} />
+      <Acceleration x={data.accel[0]} y={data.accel[1]} z={data.accel[2]} />
+      <Temperature temp={data.temp} />
     </>
   );
 }
