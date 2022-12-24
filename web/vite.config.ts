@@ -10,7 +10,7 @@ import type { UserConfigExport } from "vite";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, "env");
+  const env = loadEnv(mode, process.cwd());
 
   const config: UserConfigExport = {
     plugins: [

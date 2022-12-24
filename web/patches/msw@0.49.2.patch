@@ -1,0 +1,20 @@
+diff --git a/lib/mockServiceWorker.js b/lib/mockServiceWorker.js
+index 70f0a2b99410004d24538936be9ae643d17f9bba..ef552bf22ff5e0a0855230dff8e7fd0c046e9f31 100644
+--- a/lib/mockServiceWorker.js
++++ b/lib/mockServiceWorker.js
+@@ -88,10 +88,11 @@ self.addEventListener('fetch', function (event) {
+   const { request } = event
+   const accept = request.headers.get('accept') || ''
+ 
+-  // Bypass server-sent events.
+-  if (accept.includes('text/event-stream')) {
+-    return
+-  }
++  // Run server-sent events
++  // // Bypass server-sent events.
++  // if (accept.includes('text/event-stream')) {
++  //   return
++  // }
+ 
+   // Bypass navigation requests.
+   if (request.mode === 'navigate') {

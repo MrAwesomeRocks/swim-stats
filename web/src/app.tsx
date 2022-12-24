@@ -43,7 +43,7 @@ export function App() {
 
   return (
     <>
-      <h1>Swim Stats Tracker</h1>
+      <h1>{import.meta.env.VITE_APP_TITLE}</h1>
 
       {connected ? (
         <p style={{ color: "green" }}>Connected!</p>
