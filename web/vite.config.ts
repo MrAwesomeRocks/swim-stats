@@ -88,7 +88,7 @@ export default defineConfig(({ mode }) => {
     config.plugins = [
       ...config.plugins,
       createHtmlPlugin({ minify: true }),
-      compression({ algorithm: "gzip", deleteOriginalAssets: false }),
+      compression({ algorithm: "gzip", deleteOriginalAssets: true }),
     ];
   }
 
