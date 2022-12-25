@@ -1,4 +1,4 @@
-export { Temperature } from "./temperature/Temperature";
-export { Acceleration } from "./acceleration/Acceleration";
-export { YawPitchRoll } from "./yaw-pitch-roll/YawPitchRoll";
-export { LineChart } from "./line-chart/line-chart";
+export * from "./temperature/Temperature";
+export * from "./acceleration/Acceleration";
+export * from "./yaw-pitch-roll/YawPitchRoll";
+export * from "./line-chart/line-chart";
