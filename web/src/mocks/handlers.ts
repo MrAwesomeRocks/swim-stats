@@ -5,7 +5,7 @@ export const handlers = [
   rest.get("/events", (req, res, ctx) => {
     console.log("Mock SSE server hit");
 
-    let messages: ResponseTransformer<any, any>[] = [];
+    const messages: ResponseTransformer[] = [];
     const data = {
       ypr: [Math.random(), Math.random(), Math.random()],
       accel: [Math.random(), Math.random(), Math.random()],
