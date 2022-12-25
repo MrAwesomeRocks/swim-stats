@@ -45,7 +45,7 @@ export function App() {
     sse.addEventListener("mpuData", (e) => {
       setData((data) => [
         ...data.slice(-100, data.length),
-        { time: parseInt(e.lastEventId), ...JSON.parse(e.data) },
+        { time: parseInt(e.lastEventId, 10), ...JSON.parse(e.data) },
       ]);
     });
 
