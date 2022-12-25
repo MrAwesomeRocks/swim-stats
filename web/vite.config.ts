@@ -4,9 +4,9 @@ import checker from "vite-plugin-checker";
 import { compression } from "vite-plugin-compression2";
 import svg from "vite-plugin-svgo";
 import viteImagemin from "vite-plugin-imagemin";
+import pkg from "./package.json";
 
-import { defineConfig, loadEnv } from "vite";
-import type { UserConfigExport } from "vite";
+import { defineConfig, loadEnv, type UserConfigExport } from "vite";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -17,7 +17,9 @@ export default defineConfig(({ mode }) => {
       preact(),
       checker({
         typescript: true,
-        eslint: /* TODO */ false,
+        eslint: {
+          lintCommand: pkg.scripts.lint,
+        },
         overlay: true,
         enableBuild: true,
       }),
@@ -56,31 +58,21 @@ export default defineConfig(({ mode }) => {
       {
         name: "html-transform",
         transformIndexHtml(html) {
-          return html.replace(/%(.*?)%/g, (_match: any, p1: string) => {
-            return env[p1];
+          return html.replace(/%(.*?)%/g, (_match: unknown, p1: string) => {
+            if (env[p1] !== undefined) return env[p1];
+            return pkg[p1.replace("VITE_", "").toLowerCase()];
           });
         },
       },
     ],
-    build: {
-      rollupOptions: {
-        output: {
-          // Single file for every NPM package
-          // TODO: make sure this doesn't take up extra space
-          manualChunks(id) {
-            if (id.includes("node_modules")) {
-              const packageNameMatch = id.match(
-                /node_modules[\\/]\.pnpm[\\/]@?([\w+-.]+)@[\d.]+/
-              );
-              const packageName = packageNameMatch[1]
-                .replace("@", "")
-                .replace("+", "-")
-                .replace(".", "-");
-              return `vendor-npm.${packageName}`;
-            }
-          },
-        },
-      },
+    resolve: {
+      // https://preactjs.com/guide/v10/getting-started#aliasing-in-rollup
+      alias: [
+        { find: "react", replacement: "preact/compat" },
+        { find: "react-dom/test-utils", replacement: "preact/test-utils" },
+        { find: "react-dom", replacement: "preact/compat" },
+        { find: "react/jsx-runtime", replacement: "preact/jsx-runtime" },
+      ],
     },
   };
 
@@ -88,7 +80,11 @@ export default defineConfig(({ mode }) => {
     config.plugins = [
       ...config.plugins,
       createHtmlPlugin({ minify: true }),
-      compression({ algorithm: "gzip", deleteOriginalAssets: true }),
+      compression({
+        algorithm: "gzip",
+        deleteOriginalAssets: true,
+        threshold: 10,
+      }),
     ];
   }
 
