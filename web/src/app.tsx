@@ -1,31 +1,19 @@
-import { useEffect, useState } from "preact/hooks";
-
+// import { useEffect, useState } from "preact/hooks";
 import {
     Acceleration,
     LineChart,
+    SSEStatus,
     Temperature,
     YawPitchRoll,
 } from "./components";
+import { MpuDataProvider } from "./providers/mpuData";
 
 export function App() {
-    const [connected, setConnected] = useState(false);
-    const [data, setData] = useState<
-        {
-            time: number;
-            ypr: number[];
-            accel: number[];
-            temp: number;
-        }[]
-    >([]);
-
-    const [refresh, setRefresh] = useState(false);
-
-    useEffect(() => {
+    /*     useEffect(() => {
         const sse = new EventSource("/events");
 
         sse.addEventListener("open", () => {
             console.log("Events Connected!");
-            setConnected(true);
         });
 
         sse.addEventListener("error", (e) => {
@@ -39,7 +27,6 @@ export function App() {
                 console.log("Other error!", e);
             }
 
-            setConnected(false);
             sse.close();
         });
 
@@ -53,50 +40,21 @@ export function App() {
         return () => {
             sse.close();
         };
-    }, [refresh]);
-
-    const curData = data[data.length - 1] || {
-        time: 0,
-        ypr: [0, 0, 0],
-        accel: [0, 0, 0],
-        temp: 0,
-    };
+    }, []); */
 
     return (
-        <>
+        <MpuDataProvider onOpen={() => console.log("SSE connected!")}>
             <h1>{import.meta.env.VITE_APP_TITLE}</h1>
 
-            <div>
-                {connected ? (
-                    <p style={{ color: "green" }}>Connected!</p>
-                ) : (
-                    <>
-                        <p
-                            style={{
-                                color: "red",
-                                display: "inline",
-                                marginRight: 10,
-                            }}
-                        >
-                            Disconnected!
-                        </p>
-                        <button
-                            onClick={() => setRefresh((refresh) => !refresh)}
-                        >
-                            Reconnect
-                        </button>
-                    </>
-                )}
-            </div>
-
+            <SSEStatus addRefreshButton />
             <LineChart
                 title="Test Chart"
                 xVals={[
                     Date.now(),
-                    Date.now() + 1,
-                    Date.now() + 2,
-                    Date.now() + 3,
-                    Date.now() + 4,
+                    Date.now() + 1000,
+                    Date.now() + 2000,
+                    Date.now() + 3000,
+                    Date.now() + 4000,
                 ]}
                 yVals={[[1, 2, 3, 4, 5]]}
                 series={[
@@ -107,7 +65,7 @@ export function App() {
                 ]}
                 xAxisType="ms"
             />
-            <LineChart
+            {/*             <LineChart
                 title="YPR"
                 xVals={data.map((e) => e.time)}
                 yVals={data.reduce<number[][]>(
@@ -134,18 +92,14 @@ export function App() {
                     },
                 ]}
             />
-
-            <YawPitchRoll
-                yaw={curData.ypr[0]}
-                pitch={curData.ypr[1]}
-                roll={curData.ypr[2]}
-            />
-            <Acceleration
+ */}
+            <YawPitchRoll />
+            {/* <Acceleration
                 x={curData.accel[0]}
                 y={curData.accel[1]}
                 z={curData.accel[2]}
             />
-            <Temperature temp={curData.temp} />
-        </>
+            <Temperature temp={curData.temp} /> */}
+        </MpuDataProvider>
     );
 }

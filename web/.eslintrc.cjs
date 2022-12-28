@@ -16,6 +16,7 @@ module.exports = {
                 minimumDescriptionLength: 5,
             },
         ],
+        "@typescript-eslint/no-empty-interface": 0,
         "jest/no-deprecated-functions": 0,
     },
 };

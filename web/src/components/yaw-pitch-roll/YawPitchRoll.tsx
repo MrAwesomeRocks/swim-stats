@@ -1,21 +1,13 @@
-interface YawPitchRollProps {
-    /**
-     * Yaw angle.
-     */
-    yaw: number;
+import { useContext } from "preact/hooks";
 
-    /**
-     * Pitch angle.
-     */
-    pitch: number;
+import { MpuDataContext } from "../../providers";
 
-    /**
-     * Roll angle.
-     */
-    roll: number;
-}
+interface YawPitchRollProps {}
 
-export function YawPitchRoll({ yaw, pitch, roll }: YawPitchRollProps) {
+export function YawPitchRoll({}: YawPitchRollProps) {
+    const { data } = useContext(MpuDataContext);
+    const [yaw, pitch, roll] = (data && data.ypr) || [0, 0, 0];
+
     return (
         <p>
             YPR: {yaw.toFixed(2)}, {pitch.toFixed(2)}, {roll.toFixed(2)}
