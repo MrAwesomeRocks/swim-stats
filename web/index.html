@@ -1,41 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link
+            rel="apple-touch-icon"
+            sizes="180x180"
+            href="/apple-touch-icon.png"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/favicon-32x32.png"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="/favicon-16x16.png"
+        />
+        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
+        <meta name="theme-color" content="#ffffff" />
 
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
-  <meta name="theme-color" content="#ffffff">
+        <title>%VITE_APP_TITLE%</title>
+        <meta
+            name="description"
+            content="%VITE_APP_DESCRIPTION%"
+            data-rh="true"
+        />
 
-  <title>%VITE_APP_TITLE%</title>
-  <meta name="description" content="%VITE_APP_DESCRIPTION%" data-rh="true">
+        <!--
+        Monkeypatch the `global` object to `window`.
 
-  <!-- Monkeypatch the `global` object to `window`. -->
-  <script>
-    if (global === undefined) {
-      var global = window;
-    }
-  </script>
-</head>
+        Minified code:
 
-<body>
-  <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div id="app"></div>
-  <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-      To begin the development, run `pnpm start`.
-      To create a production bundle, run `pnpm build`.
-    -->
+        if (global === undefined) {
+            var global = window;
+        }
+        -->
+        <!-- prettier-ignore -->
+        <script>if(void 0===global)var global=window;</script>
+    </head>
 
-  <script type="module" src="/src/main.tsx"></script>
-</body>
-
+    <body>
+        <noscript>You need to enable JavaScript to run this app.</noscript>
+        <div id="app"></div>
+        <!--
+          This HTML file is a template.
+          If you open it directly in the browser, you will see an empty page.
+          You can add webfonts, meta tags, or analytics to this file.
+          The build step will place the bundled scripts into the <body> tag.
+          To begin the development, run `pnpm start`.
+          To create a production bundle, run `pnpm build`.
+        -->
+        <script type="module" src="/src/main.tsx"></script>
+    </body>
 </html>
