@@ -5,61 +5,82 @@ export interface MpuData {
     ypr: [number, number, number];
     accel: [number, number, number];
     temp: number;
+    time: number;
 }
 
 type MpuContextData = {
     error: Event | null;
-    data: MpuData | null;
-    id: number;
+    data: MpuData[];
 };
 
 export const MpuDataContext = createContext<MpuContextData>({
     error: null,
-    data: null,
-    id: 0,
+    data: [],
 });
 
 interface MpuDataProviderProps {
+    maxElements?: number;
     onOpen?: (e: MessageEvent) => void;
     children: ReactNode;
 }
 
+const noop = () => {
+    /* noop */
+};
+
 export function MpuDataProvider({
-    onOpen = () => {
-        /* no-op */
-    },
+    maxElements = 100,
+    onOpen = noop,
     children,
 }: MpuDataProviderProps) {
     const sseRef = useRef<EventSource | null>(null);
 
     const [error, setError] = useState<Event | null>(null);
-    const [data, setData] = useState<MpuData | null>(null);
-    const [id, setId] = useState<number>(0);
+    const [data, setData] = useState<MpuData[]>([]);
 
     useEffect(() => {
         const sse = new EventSource("/events");
         console.log("SSE created!");
 
+        sseRef.current = sse;
         sse.addEventListener("error", (ev) => {
             setError(ev);
         });
-
-        sse.addEventListener("mpuData", (ev) => {
-            try {
-                setData(JSON.parse(ev.data));
-            } catch (e) {
-                setData(null);
-            }
-            setId(parseInt(ev.lastEventId, 10));
-        });
-
-        sseRef.current = sse;
 
         return () => {
             sse.close();
             sseRef.current = null;
         };
     }, []);
+
+    useEffect(() => {
+        // Change our data array if we have too
+        if (data.length > maxElements)
+            setData((prev) => prev.slice(-maxElements));
+
+        // Update our event listener
+        const sse = sseRef.current;
+        if (!sse) return;
+
+        const onData = (ev: MessageEvent) => {
+            try {
+                setData((prev) => [
+                    ...prev.slice(-(maxElements - 1)),
+                    {
+                        ...JSON.parse(ev.data),
+                        time: parseInt(ev.lastEventId, 10),
+                    },
+                ]);
+            } catch (e) {
+                // Do nothing, as we got invalid data
+            }
+        };
+        sse.addEventListener("mpuData", onData);
+
+        return () => {
+            sse.removeEventListener("mpuData", onData);
+        };
+    }, [maxElements]);
 
     useEffect(() => {
         const sse = sseRef.current;
@@ -72,7 +93,7 @@ export function MpuDataProvider({
     }, [onOpen]);
 
     return (
-        <MpuDataContext.Provider value={{ data, error, id }}>
+        <MpuDataContext.Provider value={{ data, error }}>
             {children}
         </MpuDataContext.Provider>
     );
