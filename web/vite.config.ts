@@ -1,6 +1,8 @@
 import react from "@vitejs/plugin-react-swc";
+import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig, loadEnv, type UserConfigExport } from "vite";
 import { ViteAliases } from "vite-aliases";
+import { autoComplete, Plugin as importToCDN } from "vite-plugin-cdn-import";
 import checker from "vite-plugin-checker";
 import { compression } from "vite-plugin-compression2";
 import { createHtmlPlugin } from "vite-plugin-html";
@@ -68,6 +70,7 @@ export default defineConfig(({ mode }) => {
                 useConfig: true,
                 useTypescript: true,
                 createLog: true,
+                logPath: "logs",
             }),
             // HTML transform plugin to replace %VAR% with the variable's value
             {
@@ -85,17 +88,50 @@ export default defineConfig(({ mode }) => {
         ],
     };
 
-    if (mode !== "development") {
+    if (mode === "development") return config; // We're done
+
+    // Production plugins
+    let deleteOriginalAssets = true;
+    if (env["VITE_BUILD_DEBUG"] === "true") {
+        deleteOriginalAssets = false; // Keep our original assets to view
         config.plugins = [
             ...config.plugins,
-            createHtmlPlugin({ minify: true }),
-            compression({
-                algorithm: "gzip",
-                deleteOriginalAssets: true,
-                threshold: 10,
+            // Add visualizer plugin
+            visualizer({
+                gzipSize: true,
+                open: true,
             }),
         ];
     }
+
+    config.plugins = [
+        ...config.plugins,
+        createHtmlPlugin({ minify: true }),
+        // Load from CDN for smaller builds
+        importToCDN({
+            modules: [
+                autoComplete("react"),
+                autoComplete("react-dom"),
+                {
+                    name: "uplot",
+                    var: "uPlot",
+                    path: "dist/uPlot.iife.min.js",
+                    css: "dist/uPlot.min.css",
+                },
+                {
+                    name: "lodash-es",
+                    var: "_",
+                    path: "//unpkg.com/lodash@4.17.21/lodash.min.js",
+                },
+            ],
+            prodUrl: "//unpkg.com/{name}@{version}/{path}",
+        }),
+        compression({
+            algorithm: "gzip",
+            deleteOriginalAssets,
+            threshold: 10,
+        }),
+    ];
 
     return config;
 });

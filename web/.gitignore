@@ -23,3 +23,6 @@ dist
 *.njsproj
 *.sln
 *.sw?
+
+# build statistics
+stats.html

@@ -25,4 +25,9 @@ module.exports = {
         "@typescript-eslint/no-empty-interface": 0,
         "jest/no-deprecated-functions": 0,
     },
+    settings: {
+        react: {
+            version: "detect",
+        },
+    },
 };
