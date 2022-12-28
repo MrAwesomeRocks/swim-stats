@@ -5,8 +5,8 @@ import {
     SSEStatus,
     Temperature,
     YawPitchRoll,
-} from "./components";
-import { MpuDataProvider } from "./providers/mpuData";
+} from "@/components";
+import { MpuDataProvider } from "@/providers";
 
 export function App() {
     /*     useEffect(() => {

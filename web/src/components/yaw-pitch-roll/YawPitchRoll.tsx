@@ -1,6 +1,6 @@
 import { useContext } from "preact/hooks";
 
-import { MpuDataContext } from "../../providers";
+import { MpuDataContext } from "@/providers";
 
 interface YawPitchRollProps {}
 

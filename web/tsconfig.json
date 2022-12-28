@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "baseUrl": ".",
         "target": "ESNext",
         "useDefineForClassFields": true,
         "lib": ["DOM", "DOM.Iterable", "ESNext"],
@@ -15,8 +16,21 @@
         "isolatedModules": true,
         "noEmit": true,
         "jsx": "react-jsx",
-        "jsxImportSource": "preact"
+        "jsxImportSource": "preact",
+        "paths": {
+            "@assets/*": ["src/assets/*"],
+            "@components/*": ["src/components/*"],
+            "@hooks/*": ["src/hooks/*"],
+            "@mocks/*": ["src/mocks/*"],
+            "@providers/*": ["src/providers/*"],
+            "@/*": ["src/*"],
+            "@logs/*": ["src/logs/*"]
+        }
     },
     "include": ["src"],
-    "references": [{ "path": "./tsconfig.node.json" }]
+    "references": [
+        {
+            "path": "./tsconfig.node.json"
+        }
+    ]
 }

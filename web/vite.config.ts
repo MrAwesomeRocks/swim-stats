@@ -1,5 +1,6 @@
 import preact from "@preact/preset-vite";
 import { defineConfig, loadEnv, type UserConfigExport } from "vite";
+import { ViteAliases } from "vite-aliases";
 import checker from "vite-plugin-checker";
 import { compression } from "vite-plugin-compression2";
 import { createHtmlPlugin } from "vite-plugin-html";
@@ -54,6 +55,19 @@ export default defineConfig(({ mode }) => {
                 },
                 svgo: false, // vite-plugin-svgo
             }),
+            ViteAliases({
+                dir: "src",
+                prefix: "@",
+                deep: true,
+                depth: 1,
+                createGlobalAlias: true,
+                adjustDuplicates: false,
+                useAbsolute: false,
+                useIndexes: false,
+                useConfig: true,
+                useTypescript: true,
+                createLog: true,
+            }),
             // HTML transform plugin to replace %VAR% with the variable's value
             {
                 name: "html-transform",
@@ -70,18 +84,18 @@ export default defineConfig(({ mode }) => {
         ],
         resolve: {
             // https://preactjs.com/guide/v10/getting-started#aliasing-in-rollup
-            alias: [
-                { find: "react", replacement: "preact/compat" },
-                {
-                    find: "react-dom/test-utils",
-                    replacement: "preact/test-utils",
-                },
-                { find: "react-dom", replacement: "preact/compat" },
-                {
-                    find: "react/jsx-runtime",
-                    replacement: "preact/jsx-runtime",
-                },
-            ],
+            // alias: [
+            //     { find: "react", replacement: "preact/compat" },
+            //     {
+            //         find: "react-dom/test-utils",
+            //         replacement: "preact/test-utils",
+            //     },
+            //     { find: "react-dom", replacement: "preact/compat" },
+            //     {
+            //         find: "react/jsx-runtime",
+            //         replacement: "preact/jsx-runtime",
+            //     },
+            // ],
         },
     };
 
