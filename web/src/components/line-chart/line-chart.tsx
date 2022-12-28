@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "preact/hooks";
-
 import { isEqual } from "lodash-es";
+import { useEffect, useRef, useState } from "react";
 import uPlot from "uplot";
 import "uplot/dist/uPlot.min.css";
 

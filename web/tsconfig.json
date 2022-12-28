@@ -3,7 +3,11 @@
         "baseUrl": ".",
         "target": "ESNext",
         "useDefineForClassFields": true,
-        "lib": ["DOM", "DOM.Iterable", "ESNext"],
+        "lib": [
+            "DOM",
+            "DOM.Iterable",
+            "ESNext"
+        ],
         "allowJs": false,
         "skipLibCheck": true,
         "esModuleInterop": false,
@@ -16,18 +20,34 @@
         "isolatedModules": true,
         "noEmit": true,
         "jsx": "react-jsx",
-        "jsxImportSource": "preact",
+        "jsxImportSource": "react",
         "paths": {
-            "@assets/*": ["src/assets/*"],
-            "@components/*": ["src/components/*"],
-            "@hooks/*": ["src/hooks/*"],
-            "@mocks/*": ["src/mocks/*"],
-            "@providers/*": ["src/providers/*"],
-            "@/*": ["src/*"],
-            "@logs/*": ["src/logs/*"]
+            "@assets/*": [
+                "src/assets/*"
+            ],
+            "@components/*": [
+                "src/components/*"
+            ],
+            "@hooks/*": [
+                "src/hooks/*"
+            ],
+            "@mocks/*": [
+                "src/mocks/*"
+            ],
+            "@providers/*": [
+                "src/providers/*"
+            ],
+            "@/*": [
+                "src/*"
+            ],
+            "@logs/*": [
+                "src/logs/*"
+            ]
         }
     },
-    "include": ["src"],
+    "include": [
+        "src"
+    ],
     "references": [
         {
             "path": "./tsconfig.node.json"

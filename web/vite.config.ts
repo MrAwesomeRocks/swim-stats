@@ -1,4 +1,4 @@
-import preact from "@preact/preset-vite";
+import react from "@vitejs/plugin-react-swc";
 import { defineConfig, loadEnv, type UserConfigExport } from "vite";
 import { ViteAliases } from "vite-aliases";
 import checker from "vite-plugin-checker";
@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
 
     const config: UserConfigExport = {
         plugins: [
-            preact(),
+            react({}),
             checker({
                 typescript: true,
                 eslint: {
@@ -55,6 +55,7 @@ export default defineConfig(({ mode }) => {
                 },
                 svgo: false, // vite-plugin-svgo
             }),
+            // eslint-disable-next-line new-cap
             ViteAliases({
                 dir: "src",
                 prefix: "@",
@@ -82,21 +83,6 @@ export default defineConfig(({ mode }) => {
                 },
             },
         ],
-        resolve: {
-            // https://preactjs.com/guide/v10/getting-started#aliasing-in-rollup
-            // alias: [
-            //     { find: "react", replacement: "preact/compat" },
-            //     {
-            //         find: "react-dom/test-utils",
-            //         replacement: "preact/test-utils",
-            //     },
-            //     { find: "react-dom", replacement: "preact/compat" },
-            //     {
-            //         find: "react/jsx-runtime",
-            //         replacement: "preact/jsx-runtime",
-            //     },
-            // ],
-        },
     };
 
     if (mode !== "development") {

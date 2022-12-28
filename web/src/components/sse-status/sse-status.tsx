@@ -1,6 +1,5 @@
-import { useContext } from "preact/hooks";
-
 import { MpuDataContext } from "@/providers";
+import { useContext } from "react";
 
 interface SSEStatusProps {
     addRefreshButton?: boolean;

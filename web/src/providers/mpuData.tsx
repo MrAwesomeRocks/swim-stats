@@ -1,5 +1,5 @@
-import { type ComponentChildren, createContext } from "preact";
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "react";
+import { createContext, type ReactNode } from "react";
 
 export interface MpuData {
     ypr: [number, number, number];
@@ -21,7 +21,7 @@ export const MpuDataContext = createContext<MpuContextData>({
 
 interface MpuDataProviderProps {
     onOpen?: (e: MessageEvent) => void;
-    children: ComponentChildren;
+    children: ReactNode;
 }
 
 export function MpuDataProvider({

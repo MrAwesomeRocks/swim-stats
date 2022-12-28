@@ -3,7 +3,13 @@
 module.exports = {
     root: true,
     parser: "@typescript-eslint/parser",
-    extends: ["preact", "plugin:@typescript-eslint/recommended", "prettier"],
+    extends: [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:react/recommended",
+        "plugin:react/jsx-runtime",
+        "prettier",
+    ],
     ignorePatterns: ["dist/"],
     rules: {
         "@typescript-eslint/ban-ts-comment": [
