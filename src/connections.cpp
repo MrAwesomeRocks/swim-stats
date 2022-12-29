@@ -181,6 +181,6 @@ mdns_setup()
     // Add web server service
     MDNS.addService("http", "tcp", 80);
 
-    log_i("mDNS running at %s.local", hostname.c_str());
+    log_i("mDNS running at http://%s.local", hostname.c_str());
     return true;
 }
