@@ -1,3 +1,4 @@
+import { useWindowSize } from "@react-hookz/web";
 import { isEqual } from "lodash-es";
 import { useEffect, useRef, useState } from "react";
 import uPlot from "uplot";
@@ -24,7 +25,7 @@ interface LineChartProps {
     /**
      * Chart width
      */
-    width?: number;
+    maxWidth?: number;
 
     /**
      * Chart height
@@ -66,7 +67,7 @@ export function LineChart({
     xVals,
     yVals,
     title = "My Chart",
-    width = 800,
+    maxWidth = 800,
     height = 600,
     series = [],
     axes = [],
@@ -140,6 +141,9 @@ export function LineChart({
     }, [xVals, yVals]);
 
     // Size
+    const { width: winWidth } = useWindowSize();
+    const width = winWidth < maxWidth ? winWidth - 40 : maxWidth; // Minimum of the 2, w/ padding
+
     useEffect(() => {
         if (!plotRef.current) return;
         plotRef.current.setSize({ width, height });
