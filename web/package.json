@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "tsc && vite build",
+        "build": "tsc && vite build && rimraf -G ./dist/mockServiceWorker.js",
         "build-debug": "tsc && cross-env VITE_BUILD_DEBUG=true vite build",
         "clean": "rimraf ./dist stats.html",
         "preview": "vite preview",
