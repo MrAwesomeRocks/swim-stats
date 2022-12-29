@@ -19,6 +19,7 @@ specifiers:
     eslint: ^8.30.0
     eslint-config-prettier: ^8.5.0
     eslint-plugin-react: ^7.31.11
+    eslint-plugin-react-hooks: ^4.6.0
     husky: ^8.0.2
     lint-staged: ^13.1.0
     lodash-es: ^4.17.21
@@ -59,6 +60,7 @@ devDependencies:
     eslint: 8.30.0
     eslint-config-prettier: 8.5.0_eslint@8.30.0
     eslint-plugin-react: 7.31.11_eslint@8.30.0
+    eslint-plugin-react-hooks: 4.6.0_eslint@8.30.0
     husky: 8.0.2
     lint-staged: 13.1.0
     msw: 0.49.2_umweiyzwzaxlw66o5gkftl2xfe_typescript@4.9.4
@@ -3645,6 +3647,18 @@ packages:
         hasBin: true
         peerDependencies:
             eslint: ">=7.0.0"
+        dependencies:
+            eslint: 8.30.0
+        dev: true
+
+    /eslint-plugin-react-hooks/4.6.0_eslint@8.30.0:
+        resolution:
+            {
+                integrity: sha512-oFc7Itz9Qxh2x4gNHStv3BqJq54ExXmfC+a1NjAta66IAN87Wu0R/QArgIS9qKzX3dXKPI9H5crl9QchNMY9+g==,
+            }
+        engines: { node: ">=10" }
+        peerDependencies:
+            eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0
         dependencies:
             eslint: 8.30.0
         dev: true

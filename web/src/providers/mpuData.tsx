@@ -57,7 +57,9 @@ export function MpuDataProvider({
         // Change our data array if we have too
         if (data.length > maxElements)
             setData((prev) => prev.slice(-maxElements));
+    }, [data.length, maxElements]);
 
+    useEffect(() => {
         // Update our event listener
         const sse = sseRef.current;
         if (!sse) return;
