@@ -15,7 +15,7 @@ export function YawPitchRoll({}: YawPitchRollProps) {
     return (
         <div>
             <p>
-                YPR: {yaw.toFixed(2)}, {pitch.toFixed(2)}, {roll.toFixed(2)}
+                YPR: {yaw.toFixed(2)}, {pitch.toFixed(2)}, {roll.toFixed(2)} (°)
             </p>
             <LineChart
                 title="Yaw, Pitch, and Roll"

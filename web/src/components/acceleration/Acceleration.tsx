@@ -15,7 +15,8 @@ export function Acceleration({}: AccelerationProps) {
     return (
         <div>
             <p>
-                YPR: {x.toFixed(2)}, {y.toFixed(2)}, {z.toFixed(2)}
+                Acceleration: {x.toFixed(2)}, {y.toFixed(2)}, {z.toFixed(2)}{" "}
+                (m/s<sup>2</sup>)
             </p>
             <LineChart
                 title="Acceleration (w/o gravity)"
