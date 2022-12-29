@@ -8,6 +8,7 @@ tasks:
   web:
     dir: web
     cmds:
+      - pnpm rimraf ../data/assets
       - pnpm build
       - >
         {{if eq OS "windows"}}
