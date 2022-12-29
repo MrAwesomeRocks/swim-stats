@@ -40,42 +40,21 @@ AsyncWebServer server(80);
 // Event source on /events
 AsyncEventSource events("/events");
 
-/**
- * @brief Unified template processor.
- *
- * @param var Template variable
- * @return
- */
-static String
-template_processor(const String& var)
-{
-    switch (var[0]) {
-        case 'v':
-            // ESP32
-            /* code */
-            break;
-
-        default:
-            break;
-    }
-    return String();
-}
-
 bool
 web_server_setup()
 {
-    // The root path loads index.html
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
-        request->send(LittleFS, "/index.html", "", false, template_processor);
-    });
-
     // index.html redirects back to root
     server.on("/index.html", HTTP_ANY, [](AsyncWebServerRequest* request) {
         request->redirect("/");
     });
 
     // Static data files
-    server.serveStatic("/", LittleFS, "/");
+    // TODO(nino): find a smart way to do last modified time
+    server.serveStatic("/", LittleFS, "/")
+        .setDefaultFile("index.html")
+        // .setLastModified("Wed, 28 Dec 2022 11:15:13 GMT");
+        .setCacheControl("public, max-age=604800, no-cache, "
+                         "stale-if-error=86400, stale-while-revalidate=86400");
 
     // Handle server-side events
     events.onConnect([](AsyncEventSourceClient* client) {
@@ -91,7 +70,7 @@ web_server_setup()
 
         // send event with message {"connected":true}, id current millis
         // and set reconnect delay to 1 second
-        client->send("{\"connected\":true}", NULL, millis(), 1000);
+        client->send("", NULL, millis(), 1000);
     });
     server.addHandler(&events);
 
