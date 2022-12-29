@@ -14,9 +14,9 @@ export const handlers = [
         messages.push(
             ctx.delay(1000),
             ctx.body(
-                `event: mpuData\ndata: ${JSON.stringify(
-                    data,
-                )}\nid: ${Date.now()}\n\n`,
+                `event: mpuData\ndata: ${JSON.stringify(data)}\nid: ${
+                    Date.now() % 10_000_000
+                }\n\n`,
             ),
         );
 

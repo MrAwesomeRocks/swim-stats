@@ -59,7 +59,7 @@ interface LineChartProps {
     /**
      * Whether the x-axis is in ms, s, or raw numbers.
      */
-    xAxisType?: "ms" | "s" | "raw";
+    xAxisType?: "ms" | "s";
 }
 
 export function LineChart({
@@ -113,14 +113,8 @@ export function LineChart({
             scales: immutableOptions.scales,
             legend: immutableOptions.legend,
             cursor: immutableOptions.cursor,
+            ms: immutableOptions.xAxisType == "ms" ? 1e-3 : 1,
         };
-
-        if (immutableOptions.xAxisType === "raw") {
-            if (!opts.scales) opts.scales = {};
-            opts.scales.x.time = false;
-        } else {
-            opts.ms = immutableOptions.xAxisType == "ms" ? 1e-3 : 1;
-        }
 
         // Create plot
         plotRef.current = new uPlot(
@@ -134,7 +128,7 @@ export function LineChart({
         return () => {
             plotRef.current?.destroy();
         };
-    }, [containerRef, immutableOptions]);
+    }, [immutableOptions]);
 
     /*
      * Mutators

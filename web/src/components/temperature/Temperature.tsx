@@ -26,6 +26,11 @@ export function Temperature({}: TemperatureProps) {
                         stroke: "red",
                     },
                 ]}
+                scales={{
+                    x: {
+                        time: false,
+                    },
+                }}
             />
         </div>
     );

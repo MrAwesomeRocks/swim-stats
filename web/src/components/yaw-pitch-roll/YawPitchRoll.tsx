@@ -44,6 +44,11 @@ export function YawPitchRoll({}: YawPitchRollProps) {
                         stroke: "green",
                     },
                 ]}
+                scales={{
+                    x: {
+                        time: false,
+                    },
+                }}
             />
         </div>
     );

@@ -44,6 +44,11 @@ export function Acceleration({}: AccelerationProps) {
                         stroke: "green",
                     },
                 ]}
+                scales={{
+                    x: {
+                        time: false,
+                    },
+                }}
             />
         </div>
     );
