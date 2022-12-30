@@ -1,5 +1,6 @@
 #include "config.h"
 #include "connections.hpp"
+#include "data.hpp"
 #include "mpu.hpp"
 #include "server.hpp"
 
@@ -163,7 +164,7 @@ loop()
         }
     }
 
-    StaticJsonDocument<192> doc;
+    mpu_data_t mpu_data;
 
 #ifdef TEST_WEBSERVER
     JsonArray accelReal = doc.createNestedArray("accel");
@@ -193,13 +194,7 @@ loop()
         /*
             YPR
         */
-        float ypr[3];
-        mpu_get_ypr(ypr);
-
-        JsonArray ypr_json = doc.createNestedArray("ypr");
-        ypr_json.add(ypr[0] * RAD_TO_DEG);
-        ypr_json.add(ypr[1] * RAD_TO_DEG);
-        ypr_json.add(ypr[2] * RAD_TO_DEG);
+        mpu_get_ypr(mpu_data.ypr);
 
         /*
             REAL ACCELERATION (no gravity)
@@ -208,22 +203,16 @@ loop()
         mpu_get_real_accel(&accel_real);
 
         // Scale in terms of m/s
-        VectorFloat accel_real_ms(
-            accel_real.x * 9.81 / 16384.0, accel_real.y * 9.81 / 16384.0,
-            accel_real.z * 9.81 / 16384.0
-        );
-
-        JsonArray accel_json = doc.createNestedArray("accel");
-        accel_json.add(accel_real_ms.x);
-        accel_json.add(accel_real_ms.y);
-        accel_json.add(accel_real_ms.z);
+        mpu_data.accel[0] = mpu_int_to_mps(accel_real.x);
+        mpu_data.accel[1] = mpu_int_to_mps(accel_real.y);
+        mpu_data.accel[2] = mpu_int_to_mps(accel_real.z);
 
         /*
             TEMPERATURE
         */
-        doc["temp"] = mpu_get_temp();
+        mpu_data.temp = mpu_get_temp();
 
-        web_server_send_event("mpuData", doc);
+        process_measurement(mpu_data);
 
         static auto last_sample_time = 0;
         auto cur_time = millis();

@@ -35,10 +35,10 @@
 #include <LittleFS.h>
 
 // Server on port 80 (HTTP)
-AsyncWebServer server(80);
+static AsyncWebServer server(80);
 
 // Event source on /events
-AsyncEventSource events("/events");
+static AsyncEventSource events("/events");
 
 bool
 web_server_setup()

@@ -91,3 +91,15 @@ void mpu_get_ypr(float ypr[3]);
  * @return float The temperature in degrees celsius.
  */
 float mpu_get_temp();
+
+/**
+ * @brief Convert an MPU integer measurement to a value in m/s.
+ *
+ * @param mpu_meas The MPU integer measurement.
+ * @return The value in m/s.
+ */
+inline float
+mpu_int_to_mps(int16_t mpu_meas)
+{
+    return mpu_meas * 9.81 / 16384.0;
+}
