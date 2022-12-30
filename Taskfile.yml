@@ -17,11 +17,11 @@ tasks:
           cp -vr dist/* ../data
         {{end}}
 
-  code:
+  upload:
     cmds:
       - pio run --target upload
 
-  fs:
+  upload-fs:
     cmds:
       - pio run --target uploadfs --environment esp32dev
 
