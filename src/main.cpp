@@ -3,6 +3,7 @@
 #include "data.hpp"
 #include "mpu.hpp"
 #include "server.hpp"
+#include "utils.hpp"
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -93,6 +94,10 @@ setup()
     configTime(
         NTP_GMT_OFFSET_sec, NTP_DST_OFFSET_sec, NTP_SERVER_1, NTP_SERVER_2, NTP_SERVER_3
     );
+    while (iso8601_str() == "") // Keep trying to get time
+        log_w("Time sync failed, retrying...");
+
+    log_i("Time synced successfully, current time: %s", iso8601_str().c_str());
 
     // Initialize LittleFS
     log_i("Mounting LittleFS...");
