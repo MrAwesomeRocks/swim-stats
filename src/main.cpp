@@ -26,8 +26,9 @@ print_chip_debug_info()
     log_d("%s v%d", ESP.getChipModel(), ESP.getChipRevision());
     log_d("%u x CPU @ %lu MHz", ESP.getChipCores(), ESP.getCpuFreqMHz());
     log_d(
-        "%.2f MB flash @ %lu MHz, mode: %#x", ESP.getFlashChipSize() / 1024.0 / 1024.0,
-        ESP.getFlashChipSpeed() / 1000 / 1000, ESP.getFlashChipMode()
+        "%.2f MB flash @ %lu MHz, mode: %#02x",
+        ESP.getFlashChipSize() / 1024.0 / 1024.0, ESP.getFlashChipSpeed() / 1000 / 1000,
+        ESP.getFlashChipMode()
     );
     log_d("Chip ID: %llX", ESP.getEfuseMac());
 
@@ -160,7 +161,7 @@ loop()
                 break;
 
             case 'h':
-                log_i("Commands: (c)lear wifi settings, (h)elp");
+                log_i("Commands: (c)lear wifi settings, start (r)ecroding, (h)elp");
                 break;
 
             case 'r':
