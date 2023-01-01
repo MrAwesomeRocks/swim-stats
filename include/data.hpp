@@ -30,6 +30,8 @@
  */
 #pragma once
 
+#include "utils.hpp"
+
 #include <ArduinoJson.h>
 
 /**
@@ -49,23 +51,18 @@ struct mpu_data_t {
 };
 
 /**
- * @brief What are we doing with our MPU data.
- */
-enum DataSink {
-    DATA_SINK_STREAM, // Stream with eventsource
-    DATA_SINK_RECORD, // Record to file
-};
-
-/**
- * @brief Set the data sink object.
- *
- * @param sink The new data sink.
- */
-void set_data_sink(DataSink sink);
-
-/**
  * @brief Process new MPU measurements.
  *
  * @param meas The new measurements.
  */
-void process_measurement(mpu_data_t meas);
+void data_process_measurement(mpu_data_t meas);
+
+/**
+ * @brief Start recording data.
+ *
+ * @param recording_len How long to record for.
+ * @param filename
+ * @param dir
+ * @param ext
+ */
+void data_start_recording(uint32_t recording_len, String filename = iso8601_str());

@@ -163,6 +163,10 @@ loop()
                 log_i("Commands: (c)lear wifi settings, (h)elp");
                 break;
 
+            case 'r':
+                data_start_recording(15000);
+                break;
+
             default:
                 log_w("Unknown command '%c'", cmd);
                 break;
@@ -196,28 +200,23 @@ loop()
 
     // read a packet from FIFO
     if (mpu_data_available()) { // Get the Latest packet
-        /*
-            YPR
-        */
+        // Get yaw, pitch, and roll
         mpu_get_ypr(mpu_data.ypr);
 
-        /*
-            REAL ACCELERATION (no gravity)
-        */
+        // Get real acceleration (i.e., no gravity)...
         VectorInt16 accel_real;
         mpu_get_real_accel(&accel_real);
 
-        // Scale in terms of m/s
+        // and scale in terms of m/s
         mpu_data.accel[0] = mpu_int_to_mps(accel_real.x);
         mpu_data.accel[1] = mpu_int_to_mps(accel_real.y);
         mpu_data.accel[2] = mpu_int_to_mps(accel_real.z);
 
-        /*
-            TEMPERATURE
-        */
+        // Get temperature
         mpu_data.temp = mpu_get_temp();
 
-        process_measurement(mpu_data);
+        // Send off the data to be processed
+        data_process_measurement(mpu_data);
 
         static auto last_sample_time = 0;
         auto cur_time = millis();

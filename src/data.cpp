@@ -32,17 +32,29 @@
 
 #include "server.hpp"
 
+#include <LittleFS.h>
+
+// What are we doing with our MPU data.
+enum DataSink {
+    DATA_SINK_STREAM, // Stream with eventsource
+    DATA_SINK_RECORD, // Record to file
+};
+
+// The default data sink.
+#define DATA_SINK_DEFAULT DATA_SINK_STREAM
+
+/******************************************************************************/
+
 // Default to streaming over WiFi
-static DataSink cur_data_sink = DATA_SINK_STREAM;
+static DataSink cur_data_sink = DATA_SINK_DEFAULT;
 
-// When to stop recording, if we are recording
-unsigned long recording_end;
+// When to stop recording
+static unsigned long rec_end;
 
-void
-set_data_sink(DataSink sink)
-{
-    cur_data_sink = sink;
-}
+// The file we're recording to
+static File rec_file;
+
+/******************************************************************************/
 
 StaticJsonDocument<192>
 mpu_data_t::to_json()
@@ -69,7 +81,7 @@ mpu_data_t::to_json()
 }
 
 void
-process_measurement(mpu_data_t meas)
+data_process_measurement(mpu_data_t meas)
 {
     switch (cur_data_sink) {
         case DATA_SINK_STREAM:
@@ -77,12 +89,44 @@ process_measurement(mpu_data_t meas)
             break;
 
         case DATA_SINK_RECORD:
-            // TODO
+            if (millis() > rec_end) {
+                rec_file.close();
+                cur_data_sink = DATA_SINK_DEFAULT;
+
+                log_i("Recording completed!");
+                return;
+            }
+            rec_file.write(reinterpret_cast<uint8_t*>(&meas), sizeof(meas));
             break;
 
         default:
-            log_w("Invalid data sink.");
-            log_e("WE SHOULD NEVER BE HERE.");
+            log_w("Invalid data sink %lu", cur_data_sink);
+            log_e("WE SHOULD NEVER BE HERE. Restarting...");
+            ESP.restart();
             break;
     }
+}
+
+void
+data_start_recording(uint32_t rec_len, String filename)
+{
+    // Prepend the dir and append the ext
+    filename = "/recs/" + filename + ".dat";
+
+    log_i("Recording to %s...", filename.c_str());
+
+    // Open the file
+    rec_file = LittleFS.open(filename, "w", true);
+    if (!rec_file) {
+        log_e("Could not open recording file.");
+        rec_file.close();
+        return;
+    }
+
+    // Set the sink mode
+    cur_data_sink = DATA_SINK_RECORD;
+
+    // Set the end time
+    log_i("Starting recording for %lu ms.", rec_len);
+    rec_end = millis() + rec_len;
 }

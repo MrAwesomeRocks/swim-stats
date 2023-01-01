@@ -30,6 +30,8 @@
  */
 #include "server.hpp"
 
+#include "data.hpp"
+
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
@@ -40,15 +42,111 @@ static AsyncWebServer server(80);
 // Event source on /events
 static AsyncEventSource events("/events");
 
+static void
+list_dir(String dir, AsyncWebServerRequest* req)
+{
+    // Open dir
+    log_i("Opening directory %s", dir.c_str());
+
+    File rec_dir = LittleFS.open(dir);
+    if (!rec_dir || !rec_dir.isDirectory()) {
+        log_e("Could not open directory!");
+        rec_dir.close();
+        return req->send(500, "text/plain", "Could not open directory.");
+    }
+
+    // Allocate JSON
+    log_d("Creating JSON document");
+
+    DynamicJsonDocument doc(1024);
+    auto files = doc.createNestedArray("files");
+
+    // Go through files
+    log_i("Walking files!");
+
+    File f;
+    while (f = rec_dir.openNextFile()) {
+        char* filename = strdup(f.name());
+        log_d("Found file %s", filename);
+
+        files.add(filename);
+        f.close();
+    }
+
+    // Check for overflow
+    if (doc.overflowed()) {
+        log_e("Overflowed JSON document!");
+        return req->send(500, "text/plain", "Overflowed JSON document!");
+    }
+
+    // Send it
+    auto* res = req->beginResponseStream("application/json");
+    serializeJson(doc, *res);
+    req->send(res);
+
+    log_i("Successfully listed directory");
+}
+
 bool
 web_server_setup()
 {
-    // index.html redirects back to root
-    server.on("/index.html", HTTP_ANY, [](AsyncWebServerRequest* request) {
-        request->redirect("/");
+    // API paths
+    server.on("/recordings", HTTP_GET, [](AsyncWebServerRequest* req) {
+        // Check if we should list the directory
+        if (req->url().length() <= 12) // "/recordings" or "/recordings/"
+            return list_dir("/recs", req);
+
+        // Send a specific file
+        String filename = "/recs/" + req->url().substring(12);
+
+        // Check if we should send the raw data file
+        if (req->hasParam("raw")) {
+            log_i("Raw file requested.");
+            return req->send(LittleFS, filename, "", true);
+        }
+
+        // We should send the file converted to JSON
+        log_i("Opening file %s", filename.c_str());
+
+        File file = LittleFS.open(filename);
+        if (!file || file.isDirectory()) {
+            log_e("Could not open recording file \"%s\"", file.path());
+            file.close();
+            return req->send(404, "text/plain", "Recording not found.");
+        }
+
+        // Get file size
+        uint32_t num_points = file.size() / sizeof(mpu_data_t);
+        log_i("Found %lu datapoints in %s", num_points, filename.c_str());
+
+        // Create JSON and fill it
+        log_d("Creating JSON document");
+        DynamicJsonDocument doc(16 + 160 * num_points + 8); // extra 8 bytes at end
+        auto data = doc.createNestedArray("data");
+
+        while (file.available()) {
+            mpu_data_t mpu_data;
+            file.read(reinterpret_cast<uint8_t*>(&mpu_data), sizeof(mpu_data));
+            data.add(mpu_data.to_json());
+        }
+
+        // Check for overflow
+        if (doc.overflowed()) {
+            log_e("Overflowed JSON document!");
+            return req->send(500, "text/plain", "Overflowed JSON document!");
+        }
+
+        // Send it
+        auto* res = req->beginResponseStream("application/json");
+        serializeJson(doc, *res);
+        req->send(res);
+
+        log_i("Successfully sent data file");
     });
 
     // Static data files
+    server.rewrite("/index.html", "/");
+
     // TODO(nino): find a smart way to do last modified time
     server.serveStatic("/", LittleFS, "/")
         .setDefaultFile("index.html")
