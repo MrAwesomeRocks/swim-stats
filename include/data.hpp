@@ -34,12 +34,16 @@
 
 #include <ArduinoJson.h>
 
+#define MPU_DATA_JSON_SIZE 160
+
 /**
  * @brief A struct for holding raw MPU data measurements
  */
 struct mpu_data_t {
-    float ypr[3];   // [yaw, pitch, roll]  (radians)
+    float ypr[3]; // [yaw, pitch, roll]  (radians)
+
     float accel[3]; // [a_x, a_y, a_z]     (w/o gravity, m/s^2)
+    // float gyro[3];  // [g_x, g_y, g_z]     (rad / s)
     float temp;     //                     (celsius)
 
     /**
@@ -61,8 +65,6 @@ void data_process_measurement(mpu_data_t meas);
  * @brief Start recording data.
  *
  * @param recording_len How long to record for.
- * @param filename
- * @param dir
- * @param ext
+ * @param filename The filename to record to.
  */
 void data_start_recording(uint32_t recording_len, String filename = iso8601_str());

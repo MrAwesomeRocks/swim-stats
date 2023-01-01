@@ -33,6 +33,7 @@
 #include "data.hpp"
 
 #include <ArduinoJson.h>
+#include <AsyncJson.h>
 #include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
 
@@ -46,11 +47,11 @@ static void
 list_dir(String dir, AsyncWebServerRequest* req)
 {
     // Open dir
-    log_i("Opening directory %s", dir.c_str());
+    log_i("Opening directory \"%s\"", dir.c_str());
 
     File rec_dir = LittleFS.open(dir);
     if (!rec_dir || !rec_dir.isDirectory()) {
-        log_e("Could not open directory!");
+        log_e("Could not open directory \"%s\"", dir.c_str());
         rec_dir.close();
         return req->send(500, "text/plain", "Could not open directory.");
     }
@@ -76,7 +77,7 @@ list_dir(String dir, AsyncWebServerRequest* req)
     // Check for overflow
     if (doc.overflowed()) {
         log_e("Overflowed JSON document!");
-        return req->send(500, "text/plain", "Overflowed JSON document!");
+        return req->send(507, "text/plain", "Overflowed JSON document!");
     }
 
     // Send it
@@ -87,10 +88,75 @@ list_dir(String dir, AsyncWebServerRequest* req)
     log_i("Successfully listed directory");
 }
 
+static void
+send_jsonified_data_file(String filename, AsyncWebServerRequest* req)
+{
+    // We should send the file converted to JSON
+    log_i("Opening file \"%s\"", filename.c_str());
+
+    File file = LittleFS.open(filename);
+    if (!file || file.isDirectory()) {
+        log_e("Could not open recording file \"%s\"", filename);
+        file.close();
+        return req->send(404, "text/plain", "Recording not found.");
+    }
+
+    // Get file size
+    uint32_t num_points = file.size() / sizeof(mpu_data_t);
+    log_i("Found %lu datapoints in %s", num_points, filename.c_str());
+
+    // Create JSON and fill it
+    log_d("Creating JSON document");
+    DynamicJsonDocument doc(
+        16                                // for the "data" entry
+        + MPU_DATA_JSON_SIZE * num_points // MPU_DATA_JSON_SIZE bytes per entry
+        + 8                               // extra 8 bytes at end for safety
+    );
+    auto data = doc.createNestedArray("data");
+
+    while (file.available()) {
+        mpu_data_t mpu_data;
+        file.read(reinterpret_cast<uint8_t*>(&mpu_data), sizeof(mpu_data));
+        data.add(mpu_data.to_json());
+    }
+
+    // Check for overflow
+    if (doc.overflowed()) {
+        log_e("Overflowed JSON document!");
+        return req->send(507, "text/plain", "Overflowed JSON document!");
+    }
+
+    // Send it
+    auto* res = req->beginResponseStream("application/json");
+    serializeJson(doc, *res);
+    req->send(res);
+
+    log_i("Successfully sent data file");
+}
+
 bool
 web_server_setup()
 {
-    // API paths
+    /**
+     * API paths
+     */
+    server.addHandler(new AsyncCallbackJsonWebHandler(
+        "/recordings/start",
+        [](AsyncWebServerRequest* req, JsonVariant& json_var) {
+            const JsonObject& json = json_var.as<JsonObject>();
+
+            log_i("Request body:");
+            serializeJsonPretty(json, Serial);
+
+            uint32_t rec_time = json["time"];
+            if (!rec_time)
+                return req->send(422, "text/plain", "JSON \"time\" key missing");
+
+            data_start_recording(rec_time);
+            return req->send(200, "text/plain", "Recording started");
+        }
+    ));
+
     server.on("/recordings", HTTP_GET, [](AsyncWebServerRequest* req) {
         // Check if we should list the directory
         if (req->url().length() <= 12) // "/recordings" or "/recordings/"
@@ -104,57 +170,30 @@ web_server_setup()
             log_i("Raw file requested.");
             return req->send(LittleFS, filename, "", true);
         }
-
-        // We should send the file converted to JSON
-        log_i("Opening file %s", filename.c_str());
-
-        File file = LittleFS.open(filename);
-        if (!file || file.isDirectory()) {
-            log_e("Could not open recording file \"%s\"", file.path());
-            file.close();
-            return req->send(404, "text/plain", "Recording not found.");
-        }
-
-        // Get file size
-        uint32_t num_points = file.size() / sizeof(mpu_data_t);
-        log_i("Found %lu datapoints in %s", num_points, filename.c_str());
-
-        // Create JSON and fill it
-        log_d("Creating JSON document");
-        DynamicJsonDocument doc(16 + 160 * num_points + 8); // extra 8 bytes at end
-        auto data = doc.createNestedArray("data");
-
-        while (file.available()) {
-            mpu_data_t mpu_data;
-            file.read(reinterpret_cast<uint8_t*>(&mpu_data), sizeof(mpu_data));
-            data.add(mpu_data.to_json());
-        }
-
-        // Check for overflow
-        if (doc.overflowed()) {
-            log_e("Overflowed JSON document!");
-            return req->send(500, "text/plain", "Overflowed JSON document!");
-        }
-
-        // Send it
-        auto* res = req->beginResponseStream("application/json");
-        serializeJson(doc, *res);
-        req->send(res);
-
-        log_i("Successfully sent data file");
+        return send_jsonified_data_file(filename, req);
     });
 
-    // Static data files
+    /**
+     * Static data files
+     */
+    // Redirect index.html to root
     server.rewrite("/index.html", "/");
 
-    // TODO(nino): find a smart way to do last modified time
+    // Get last modified time
+    File index = LittleFS.open("/index.html.gz");
+    time_t last_modified = index.getLastWrite();
+    index.close();
+
+    // Setup static file handler
     server.serveStatic("/", LittleFS, "/")
         .setDefaultFile("index.html")
-        // .setLastModified("Wed, 28 Dec 2022 11:15:13 GMT");
+        .setLastModified(gmtime(&last_modified))
         .setCacheControl("public, max-age=604800, no-cache, "
                          "stale-if-error=86400, stale-while-revalidate=86400");
 
-    // Handle server-side events
+    /**
+     * Server-side events
+     */
     events.onConnect([](AsyncEventSourceClient* client) {
         IPAddress ip = client->client()->localIP();
 
@@ -172,7 +211,9 @@ web_server_setup()
     });
     server.addHandler(&events);
 
-    // Start the server
+    /**
+     * Start the server
+     */
     server.begin();
 
     return true; // success

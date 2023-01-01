@@ -53,3 +53,6 @@
 # Data files need to be individually added
 data/*
 !data/.gitkeep
+
+# Files downloaded from ESP32
+downloads/
