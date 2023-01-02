@@ -154,7 +154,7 @@ send_jsonified_data_file(String filename, AsyncWebServerRequest* req)
             log_d("%lu bytes of output buffer", len);
             log_d("Copying %lu/%lu bytes, starting at %lu", to_copy, available, idx);
 
-            if (to_copy == 0){
+            if (to_copy == 0) {
                 free(buf); // We're done
                 return 0;
             }
