@@ -33,25 +33,25 @@
 #include "utils.hpp"
 
 #include <ArduinoJson.h>
+#include <helper_3dmath.h>
 
-#define MPU_DATA_JSON_SIZE 160
+#define MPU_DATA_JSON_SIZE 192
+#define MPU_DATA_JSON_ARR_SIZE 208
 
 /**
  * @brief A struct for holding raw MPU data measurements
  */
 struct mpu_data_t {
-    float ypr[3]; // [yaw, pitch, roll]  (radians)
-
-    float accel[3]; // [a_x, a_y, a_z]     (w/o gravity, m/s^2)
-    // float gyro[3];  // [g_x, g_y, g_z]     (rad / s)
-    float temp;     //                     (celsius)
+    float ypr[3];      // [yaw, pitch, roll]  (radians)
+    VectorFloat accel; // [a_x, a_y, a_z]     (w/o gravity, m/s^2)
+    VectorFloat gyro;  // [g_x, g_y, g_z]     (rad / s)
 
     /**
      * @brief Convert this data struct to a JSON.
      *
      * @return A new JsonObject with this struct's data.
      */
-    StaticJsonDocument<192> to_json();
+    StaticJsonDocument<MPU_DATA_JSON_SIZE> to_json();
 };
 
 /**

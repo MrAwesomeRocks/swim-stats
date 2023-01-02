@@ -67,6 +67,13 @@ bool mpu_data_available();
 void mpu_get_real_accel(VectorInt16* accel_real);
 
 /**
+ * @brief Get the real acceleration (without gravity).
+ *
+ * @param accel_real Container to save the accelearation to.
+ */
+void mpu_get_real_accel(VectorFloat* accel_real);
+
+/**
  * @brief Get the real acceleration, in the world frame of reference.
  *
  * This rotates the acceleration to match the initial MPU6050 orientation.
@@ -83,6 +90,20 @@ void mpu_get_world_accel(VectorInt16* accel_world);
 void mpu_get_ypr(float ypr[3]);
 
 /**
+ * @brief Get the gyroscope reading.
+ *
+ * @param accel_real Container to save the gyroscope reading to.
+ */
+void mpu_get_gyro(VectorInt16* gyro);
+
+/**
+ * @brief Get the gyroscope reading.
+ *
+ * @param accel_real Container to save the gyroscope reading to.
+ */
+void mpu_get_gyro(VectorFloat* gyro);
+
+/**
  * @brief Get the temperature from the MPU6050's built-in temp sensor.
  *
  * Theoretically good for two decimal places of accuracy, realistically you can
@@ -93,13 +114,25 @@ void mpu_get_ypr(float ypr[3]);
 float mpu_get_temp();
 
 /**
- * @brief Convert an MPU integer measurement to a value in m/s.
+ * @brief Convert an MPU acceleration integer measurement to a value in m/s.
  *
  * @param mpu_meas The MPU integer measurement.
  * @return The value in m/s.
  */
 inline float
-mpu_int_to_mps(int16_t mpu_meas)
+mpu_accel_to_mps(int16_t mpu_meas)
 {
     return mpu_meas * 9.81 / 16384.0;
+}
+
+/**
+ * @brief Convert an MPU gyro measurement to a value in °/s
+ *
+ * @param mpu_meas The MPU integer measurement.
+ * @return The value in degrees per second.
+ */
+inline float
+mpu_gyro_to_dps(int16_t mpu_meas)
+{
+    return mpu_meas * 2000.0 / INT16_MAX;
 }

@@ -56,10 +56,10 @@ static File rec_file;
 
 /******************************************************************************/
 
-StaticJsonDocument<192>
+StaticJsonDocument<MPU_DATA_JSON_SIZE>
 mpu_data_t::to_json()
 {
-    StaticJsonDocument<192> doc;
+    StaticJsonDocument<MPU_DATA_JSON_SIZE> doc;
 
     // Yaw, pitch, roll
     // TODO(nino): send in radians or degrees?
@@ -70,12 +70,15 @@ mpu_data_t::to_json()
 
     // Real acceleration (w/o gravity)
     JsonArray accel_json = doc.createNestedArray("accel");
-    accel_json.add(accel[0]);
-    accel_json.add(accel[1]);
-    accel_json.add(accel[2]);
+    accel_json.add(accel.x);
+    accel_json.add(accel.y);
+    accel_json.add(accel.x);
 
-    // Temperature
-    doc["temp"] = temp;
+    // Gyroscope
+    JsonArray gyro_json = doc.createNestedArray("gyro");
+    gyro_json.add(gyro.x);
+    gyro_json.add(gyro.y);
+    gyro_json.add(gyro.z);
 
     return doc;
 }

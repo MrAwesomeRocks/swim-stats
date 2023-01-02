@@ -196,6 +196,17 @@ mpu_get_real_accel(VectorInt16* accel_real)
 }
 
 void
+mpu_get_real_accel(VectorFloat* accel_real)
+{
+    VectorInt16 accel_int;
+    mpu_get_real_accel(&accel_int);
+
+    accel_real->x = mpu_accel_to_mps(accel_int.x);
+    accel_real->y = mpu_accel_to_mps(accel_int.y);
+    accel_real->z = mpu_accel_to_mps(accel_int.z);
+}
+
+void
 mpu_get_world_accel(VectorInt16* accel_world)
 {
     Quaternion q;           // [w, x, y, z]     quaternion container
@@ -219,6 +230,23 @@ mpu_get_ypr(float ypr[3])
     mpu.dmpGetQuaternion(&q, fifo_buffer);
     mpu.dmpGetGravity(&gravity, &q);
     mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+}
+
+void
+mpu_get_gyro(VectorInt16* gyro)
+{
+    mpu.dmpGetGyro(gyro, fifo_buffer);
+}
+
+void
+mpu_get_gyro(VectorFloat* gyro)
+{
+    VectorInt16 gyro_int;
+    mpu_get_gyro(&gyro_int);
+
+    gyro->x = mpu_gyro_to_dps(gyro_int.x);
+    gyro->y = mpu_gyro_to_dps(gyro_int.y);
+    gyro->z = mpu_gyro_to_dps(gyro_int.z);
 }
 
 float
