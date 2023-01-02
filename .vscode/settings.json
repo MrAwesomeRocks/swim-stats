@@ -1,5 +1,16 @@
 {
-  "cSpell.words": ["ARDUHAL", "Cdev", "ebug", "ecroding"],
+  "cSpell.words": [
+    "ARDUHAL",
+    "Cdev",
+    "ebug",
+    "ecroding",
+    "OWDT",
+    "POWERON",
+    "RTCWDT",
+    "SDIO",
+    "TGWDT",
+    "Vbat"
+  ],
   "files.associations": {
     "**/*.html": "html",
     "**/templates/**/*.html": "django-html",

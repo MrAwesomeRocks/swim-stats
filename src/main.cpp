@@ -60,6 +60,11 @@ print_chip_debug_info()
         ESP_ARDUINO_VERSION_PATCH
     );
     log_d("WiFiManager %s", wifi_manager_version());
+
+    // Reset reasons
+    log_d("Core 0 reset reason: %s", get_reset_reason(0));
+    if (ESP.getChipCores() >= 2)
+        log_d("Core 1 reset reason: %s", get_reset_reason(1));
 }
 
 void
@@ -203,12 +208,18 @@ loop()
                 break;
 
             case 'h':
-                log_i("Commands: (c)lear wifi settings, (d)ebug info, start "
-                      "(r)ecroding, (h)elp");
+                Serial.println("Commands: (c)lear wifi settings, (d)ebug info, start "
+                               "(r)ecroding, (R)estart, (h)elp");
                 break;
 
             case 'r':
                 data_start_recording(15000);
+                break;
+
+            case 'R':
+                log_i("Restaring..");
+                delay(500);
+                ESP.restart();
                 break;
 
             default:
