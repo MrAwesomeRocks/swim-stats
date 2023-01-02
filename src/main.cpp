@@ -52,6 +52,10 @@ print_chip_debug_info()
         "Used PSRAM: %lu B/%lu B", ESP.getPsramSize() - ESP.getFreePsram(),
         ESP.getPsramSize()
     );
+    log_d(
+        "Used LittleFS space: %lu B/%lu B (0 means unmounted)", LittleFS.usedBytes(),
+        LittleFS.totalBytes()
+    );
 
     // Library versions
     log_d("ESP-IDF %s", ESP.getSdkVersion());
@@ -293,9 +297,9 @@ loop()
         poll_miss_count = 0;
 
 #  if MPU_SAMPLE_RATE > 70   // We overflow the FIFO buffer and need to compensate
-        delay(MPU_SAMPLE_RATE - 11);
+        delay(MPU_SAMPLE_RATE - 12);
 #  elif MPU_SAMPLE_RATE > 10 // Default sample rate is 10ms
-        delay(MPU_SAMPLE_RATE);
+        delay(MPU_SAMPLE_RATE - 2);
 #  endif
     } else {
         poll_miss_count++;

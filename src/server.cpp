@@ -57,7 +57,7 @@ list_dir(String dir, AsyncWebServerRequest* req)
         return req->send(200, "application/json", "{\"files\":[]}");
     }
 
-    if(!rec_dir.isDirectory()) {
+    if (!rec_dir.isDirectory()) {
         log_e("Directory \"%s\" not a directory", dir.c_str());
         rec_dir.close();
         return req->send(500, "text/plain", "Could not open directory.");
@@ -135,7 +135,7 @@ send_jsonified_data_file(String filename, AsyncWebServerRequest* req)
 
     // Check for overflow
     if (doc.overflowed()) {
-        log_e("Overflowed JSON document!");
+        log_e("Overflowed JSON document! Size: %lu", doc.memoryUsage());
         return req->send(507, "text/plain", "Overflowed JSON document!");
     }
 

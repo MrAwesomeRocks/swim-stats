@@ -11,7 +11,7 @@
 */
 // Sample rate (in ms)
 // Should be a multiple of 10
-#define MPU_SAMPLE_RATE 10
+#define MPU_SAMPLE_RATE 50
 
 /*
         Logging Config
