@@ -133,3 +133,42 @@ data_start_recording(uint32_t rec_len, String filename)
     log_i("Starting recording for %lu ms.", rec_len);
     rec_end = millis() + rec_len;
 }
+
+bool
+data_clear_recordings()
+{
+    if (cur_data_sink == DATA_SINK_RECORD) {
+        log_w("In the middle of a recording, cannot modify recording data.");
+        return false;
+    }
+
+    File rec_dir = LittleFS.open("/recs");
+    if (!rec_dir) {
+        log_i("Recording dir already deleted");
+        rec_dir.close();
+        return true;
+    }
+
+    if (!rec_dir.isDirectory()) {
+        log_w("Recording dir not a directory, removing");
+        rec_dir.close();
+        LittleFS.remove("/recs");
+        return true;
+    }
+
+    File f;
+    while (f = rec_dir.openNextFile()) {
+        char* filename = strdup(f.path());
+        log_d("Deleting file %s", filename);
+
+        f.close();
+        if (!LittleFS.remove(filename)) {
+            log_e("Deleting file %s failed", filename);
+            return false;
+        }
+    }
+
+    log_d("Deleting recordings direcotry");
+    rec_dir.close();
+    return LittleFS.rmdir("/recs");
+}

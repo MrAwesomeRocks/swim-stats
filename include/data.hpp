@@ -35,7 +35,7 @@
 #include <ArduinoJson.h>
 #include <helper_3dmath.h>
 
-#define MPU_DATA_JSON_SIZE 192
+#define MPU_DATA_JSON_SIZE     192
 #define MPU_DATA_JSON_ARR_SIZE 208
 
 /**
@@ -68,3 +68,10 @@ void data_process_measurement(mpu_data_t meas);
  * @param filename The filename to record to.
  */
 void data_start_recording(uint32_t recording_len, String filename = iso8601_str());
+
+/**
+ * @brief Clear recording data.
+ *
+ * @return If the operation was successful.
+ */
+bool data_clear_recordings();

@@ -203,13 +203,18 @@ loop()
                 ESP.restart();
                 break;
 
+            case 'C':
+                log_i("Clearing recordings");
+                data_clear_recordings();
+                break;
+
             case 'd':
                 print_chip_debug_info();
                 break;
 
             case 'h':
-                Serial.println("Commands: (c)lear wifi settings, (d)ebug info, start "
-                               "(r)ecroding, (R)estart, (h)elp");
+                Serial.println("Commands: (c)lear wifi settings, (C)lear recordings, "
+                               "(d)ebug info, start (r)ecroding, (R)estart, (h)elp");
                 break;
 
             case 'r':

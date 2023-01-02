@@ -50,8 +50,15 @@ list_dir(String dir, AsyncWebServerRequest* req)
     log_i("Opening directory \"%s\"", dir.c_str());
 
     File rec_dir = LittleFS.open(dir);
-    if (!rec_dir || !rec_dir.isDirectory()) {
-        log_e("Could not open directory \"%s\"", dir.c_str());
+    if (!rec_dir) {
+        // No files in directory - it doesn't exist
+        log_w("Directory %s does not exist", dir);
+        rec_dir.close();
+        return req->send(200, "application/json", "{\"files\":[]}");
+    }
+
+    if(!rec_dir.isDirectory()) {
+        log_e("Directory \"%s\" not a directory", dir.c_str());
         rec_dir.close();
         return req->send(500, "text/plain", "Could not open directory.");
     }
@@ -205,6 +212,21 @@ web_server_setup()
             return req->send(LittleFS, filename, "", true);
         }
         return send_jsonified_data_file(filename, req);
+    });
+
+    server.on("/recordings", HTTP_DELETE, [](AsyncWebServerRequest* req) {
+        StaticJsonDocument<16> doc;
+        doc["success"] = data_clear_recordings();
+
+        // Send it
+        auto* res = req->beginResponseStream("application/json");
+        serializeJson(doc, *res);
+        req->send(res);
+
+        if (doc["success"])
+            log_i("Successfully cleared recordings");
+        else
+            log_e("Failed to clear recordings");
     });
 
     /**
