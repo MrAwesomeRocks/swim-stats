@@ -107,11 +107,17 @@ send_jsonified_data_file(String filename, AsyncWebServerRequest* req)
 
     // Create JSON and fill it
     log_d("Creating JSON document");
-    DynamicJsonDocument doc(
-        16                                // for the "data" entry
-        + MPU_DATA_JSON_SIZE * num_points // MPU_DATA_JSON_SIZE bytes per entry
-        + 8                               // extra 8 bytes at end for safety
-    );
+
+    uint32_t doc_size =
+        16                                    // for the "data" entry
+        + MPU_DATA_JSON_ARR_SIZE * num_points // MPU_DATA_JSON_ARR_SIZE bytes per entry
+        + 8;                                  // extra 8 bytes at end for safety
+    if (doc_size > ESP.getFreeHeap()) {
+        log_e("JSON doc too big! %lu > %lu", doc_size, ESP.getFreeHeap());
+        return req->send(507);
+    }
+
+    DynamicJsonDocument doc(doc_size);
     auto data = doc.createNestedArray("data");
 
     while (file.available()) {
@@ -127,8 +133,36 @@ send_jsonified_data_file(String filename, AsyncWebServerRequest* req)
     }
 
     // Send it
-    auto* res = req->beginResponseStream("application/json");
-    serializeJson(doc, *res);
+    size_t buf_size = measureJson(doc);
+    auto* buf = (char*)malloc(buf_size);
+    if (!buf) {
+        log_e("JSON doc too big! %lu > %lu", buf_size, ESP.getFreeHeap());
+        return req->send(507);
+    }
+
+    serializeJson(doc, buf, buf_size);
+    auto* res = req->beginChunkedResponse(
+        "application/json",
+        [buf, buf_size](uint8_t* out_buf, size_t len, size_t idx) -> size_t {
+            // Write up to "maxLen" bytes into "buffer" and return the amount written.
+            // index equals the amount of bytes that have been already sent
+            // You will be asked for more data until 0 is returned
+            // Keep in mind that you can not delay or yield waiting for more data!
+            size_t available = buf_size - idx;
+            size_t to_copy = min(available, len);
+
+            log_d("%lu bytes of output buffer", len);
+            log_d("Copying %lu/%lu bytes, starting at %lu", to_copy, available, idx);
+
+            if (to_copy == 0){
+                free(buf); // We're done
+                return 0;
+            }
+
+            strncpy((char*)out_buf, buf + idx, to_copy);
+            return to_copy;
+        }
+    );
     req->send(res);
 
     log_i("Successfully sent data file");

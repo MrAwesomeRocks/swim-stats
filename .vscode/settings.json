@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["ARDUHAL", "Cdev", "ecroding"],
+  "cSpell.words": ["ARDUHAL", "Cdev", "ebug", "ecroding"],
   "files.associations": {
     "**/*.html": "html",
     "**/templates/**/*.html": "django-html",
@@ -78,6 +78,7 @@
     "cerrno": "cpp",
     "climits": "cpp",
     "queue": "cpp",
-    "stack": "cpp"
+    "stack": "cpp",
+    "list": "cpp"
   }
 }

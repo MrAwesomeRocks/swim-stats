@@ -160,8 +160,13 @@ loop()
                 ESP.restart();
                 break;
 
+            case 'd':
+                print_chip_debug_info();
+                break;
+
             case 'h':
-                log_i("Commands: (c)lear wifi settings, start (r)ecroding, (h)elp");
+                log_i("Commands: (c)lear wifi settings, (d)ebug info, start "
+                      "(r)ecroding, (h)elp");
                 break;
 
             case 'r':
