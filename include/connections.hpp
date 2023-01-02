@@ -33,9 +33,10 @@
 /**
  * @brief Attempt to connect to WiFi.
  *
+ * @param reset Flag to reset WiFi settings.
  * @return bool If the connection was successful.
  */
-bool wifi_connect();
+bool wifi_connect(bool reset);
 
 /**
  * @brief Get the WiFi manager version.

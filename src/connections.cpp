@@ -44,7 +44,7 @@ static const IPAddress static_dns(STATIC_DNS_SERVER);
 #endif
 
 bool
-wifi_connect()
+wifi_connect(bool reset)
 {
 #if defined(HOSTNAME_PREFIX) || defined(AP_SSID_PREFIX) || !defined(AP_PSK)
     // Get the chip ID, we'll need it later
@@ -58,6 +58,10 @@ wifi_connect()
     // Create our WiFi manager
     WiFiManager wm;
     wm.setDebugOutput(true, ARDUHAL_LOG_COLOR_D "[------][D][WiFiManager] UNKNOWN(): ");
+
+    // Check if we should clear WiFi settings.
+    if (reset)
+        wm.resetSettings();
 
     // Save user preferences
     wm.setRestorePersistent(true);
@@ -167,12 +171,16 @@ wifi_print_status()
 bool
 mdns_setup()
 {
+#ifdef HOSTNAME
+    String hostname(HOSTNAME);
+#else
     // Get chip ID
     String esp32_id(WIFI_getChipId(), HEX);
     esp32_id.toUpperCase();
 
     // Create hostname
     String hostname(HOSTNAME_PREFIX + esp32_id);
+#endif
 
     // Start mDNS
     if (!MDNS.begin(hostname.c_str()))

@@ -83,10 +83,27 @@
 #define NTP_TZ -6
 
 // Number of seconds between our time zone and GMT
-#define NTP_GMT_OFFSET_sec NTP_TZ * 3600
+#define NTP_GMT_OFFSET_SEC NTP_TZ * 3600
 
 // Offset for DST. Should be just one hour
-#define NTP_DST_OFFSET_sec 3600
+#define NTP_DST_OFFSET_SEC 3600
+
+/*
+        EEPROM config
+*/
+// Size of the EEPROM memory
+#define EEPROM_SIZE 512
+
+// EEPROM address map
+enum eeprom_address_map {
+    EEPROM_ADDR_DRD = 0,  // 1 byte
+};
+
+/*
+        Double Reset detector
+*/
+// How long to wait until considering something a double reset
+#define DRD_TIMEOUT_SEC 10
 
 /*
         Tests

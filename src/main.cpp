@@ -1,12 +1,14 @@
 #include "config.h"
 #include "connections.hpp"
 #include "data.hpp"
+#include "drd.hpp"
 #include "mpu.hpp"
 #include "server.hpp"
 #include "utils.hpp"
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <EEPROM.h>
 #include <ESPmDNS.h>
 #include <LittleFS.h>
 #include <pgmspace.h>
@@ -14,6 +16,9 @@
 
 // Store whether our LED is on or not so we can blink it
 bool blinkState = false;
+
+// Double reset detector
+DoubleResetDetector drd(DRD_TIMEOUT_SEC, EEPROM_ADDR_DRD);
 
 // ================================================================
 // ===                      INITIAL SETUP                       ===
@@ -26,9 +31,8 @@ print_chip_debug_info()
     log_d("%s v%d", ESP.getChipModel(), ESP.getChipRevision());
     log_d("%u x CPU @ %lu MHz", ESP.getChipCores(), ESP.getCpuFreqMHz());
     log_d(
-        "%.2f MB flash @ %lu MHz, mode: %#02x",
-        ESP.getFlashChipSize() / 1024.0 / 1024.0, ESP.getFlashChipSpeed() / 1000 / 1000,
-        ESP.getFlashChipMode()
+        "%.2f MB flash @ %lu MHz, mode: %#2x", ESP.getFlashChipSize() / 1024.0 / 1024.0,
+        ESP.getFlashChipSpeed() / 1000 / 1000, ESP.getFlashChipMode()
     );
     log_d("Chip ID: %llX", ESP.getEfuseMac());
 
@@ -61,27 +65,53 @@ print_chip_debug_info()
 void
 setup()
 {
-    // initialize serial communication
+    // Initialize serial communication
     Serial.begin(115200);
     Serial.setDebugOutput(true);
+    while (!Serial) // Wait for initialization
+        ;
 
     // Initial log
     print_chip_debug_info();
 
-    // Connect to WiFi
+    /*
+     * Initialize EEPROM
+     */
+    log_i("Initializing EEPROM..");
+
+    if (!EEPROM.begin(EEPROM_SIZE)) {
+        log_e("Error initializing EEPROM, rebooting in 3 seconds...");
+        delay(3000);
+        ESP.restart();
+    }
+    log_i("EEPROM initialized successfully");
+
+    /*
+     * Check for a double reset.
+     */
+    bool wifi_reset = false;
+    if (drd.check()) {
+        log_i("Starting reconfiguration as double reset occurred");
+        wifi_reset = true;
+    }
+
+    /*
+     * Connect to WiFi
+     */
     log_i("Attempting to connect to WiFi...");
 
-    if (!wifi_connect()) {
+    if (!wifi_connect(wifi_reset)) {
         log_e("WiFi connection failed, rebooting in 3 seconds...");
         delay(3000);
         ESP.restart();
     }
-
     log_i("Wifi successfully connected!");
     wifi_print_status();
 
 #ifdef USE_mDNS
-    // Start mDNS
+    /*
+     * Start mDNS
+     */
     log_i("Attempting to start mDNS responder");
 
     if (mdns_setup())
@@ -90,17 +120,21 @@ setup()
         log_w("mDNS setup failed! Nice hostnames will not be available.");
 #endif
 
-    // Sync time
+    /*
+     * Sync time
+     */
     log_i("Syncing time with NTP...");
     configTime(
-        NTP_GMT_OFFSET_sec, NTP_DST_OFFSET_sec, NTP_SERVER_1, NTP_SERVER_2, NTP_SERVER_3
+        NTP_GMT_OFFSET_SEC, NTP_DST_OFFSET_SEC, NTP_SERVER_1, NTP_SERVER_2, NTP_SERVER_3
     );
     while (iso8601_str() == "") // Keep trying to get time
         log_w("Time sync failed, retrying...");
 
     log_i("Time synced successfully, current time: %s", iso8601_str().c_str());
 
-    // Initialize LittleFS
+    /*
+     * Initialize LittleFS
+     */
     log_i("Mounting LittleFS...");
 
     if (!LittleFS.begin()) {
@@ -108,11 +142,14 @@ setup()
         delay(3000);
         ESP.restart();
     }
-
     log_i("LittleFS mounted successfully!");
-    log_d("Used LittleFS: %lu B/%lu B", LittleFS.usedBytes(), LittleFS.totalBytes());
+    log_d(
+        "Used LittleFS space: %lu B/%lu B", LittleFS.usedBytes(), LittleFS.totalBytes()
+    );
 
-    // Setup web server
+    /*
+     * Setup web server
+     */
     log_i("Starting web server...");
 
     if (!web_server_setup()) {
@@ -120,11 +157,12 @@ setup()
         delay(3000);
         ESP.restart();
     }
-
     log_i("Web server started successfully");
 
 #ifndef TEST_WEBSERVER
-    // Configure the MPU6050
+    /*
+     * Configure the MPU6050
+     */
     log_i("Starting MPU6050 setup...");
 
     if (!mpu_setup()) {
@@ -132,7 +170,6 @@ setup()
         delay(3000);
         ESP.restart();
     }
-
     log_i("MPU6050 setup completed successfully!");
 #endif
 
@@ -150,6 +187,7 @@ setup()
 void
 loop()
 {
+    // Check for serial input
     if (Serial.available()) {
         char cmd;
         switch (cmd = Serial.read()) {
@@ -179,6 +217,12 @@ loop()
         }
     }
 
+    // Run the DRD loop
+    drd.loop();
+
+    /*
+     * Gather data
+     */
     mpu_data_t mpu_data;
 
 #ifdef TEST_WEBSERVER
