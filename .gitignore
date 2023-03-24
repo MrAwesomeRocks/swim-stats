@@ -56,3 +56,8 @@ data/*
 
 # Files downloaded from ESP32
 downloads/
+*.dat
+
+# Clang
+.cache/
+compile_commands.json
