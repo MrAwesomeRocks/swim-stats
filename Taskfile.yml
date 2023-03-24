@@ -28,3 +28,7 @@ tasks:
   monitor:
     cmds:
       - pio device monitor
+
+  ide:
+    cmds:
+      - pio run -t compiledb
