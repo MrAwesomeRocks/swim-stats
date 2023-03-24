@@ -112,6 +112,54 @@ send_jsonified_data_file(String filename, AsyncWebServerRequest* req)
     uint32_t num_points = file.size() / sizeof(mpu_data_t);
     log_i("Found %lu datapoints in %s", num_points, filename.c_str());
 
+    auto* res = req->beginChunkedResponse(
+        "application/json",
+        [file](uint8_t* buf, size_t max_len, size_t idx) mutable -> size_t {
+            // Write up to "maxLen" bytes into "buffer" and return the amount written.
+            // index equals the amount of bytes that have been already sent
+            // You will be asked for more data until 0 is returned
+            // Keep in mind that you can not delay or yield waiting for more data!
+            if (!file) // finished
+                return 0;
+
+            size_t written = 0;
+
+            if (idx == 0) { // at start
+                const char header[] = "{\"data\":[";
+                size_t header_len = sizeof(header) - 1; // don't want NUL
+
+                memcpy(buf, header, header_len);
+                written += header_len;
+            }
+
+            if (!file.available()) {
+                buf[0] = ']';
+                buf[1] = '}';
+                log_d("Finished JSON, closing file");
+                file.close();
+                return 2;
+            }
+
+            while (file.available()) {
+                mpu_data_t mpu_data;
+                file.read(reinterpret_cast<uint8_t*>(&mpu_data), sizeof(mpu_data));
+                auto doc = mpu_data.to_json();
+
+                size_t json_size = measureJson(doc) + 1; // json + comma
+                if (json_size > max_len - written)
+                    return written;
+
+                serializeJson(doc, buf + written, json_size);
+                written += json_size;
+                buf[written - 1] = ',';
+            }
+            log_d("Finished writing file");
+            return --written; // drop trailing comma
+        }
+    );
+    req->send(res);
+
+#if 0
     // Create JSON and fill it
     log_d("Creating JSON document");
 
@@ -119,7 +167,7 @@ send_jsonified_data_file(String filename, AsyncWebServerRequest* req)
         16                                    // for the "data" entry
         + MPU_DATA_JSON_ARR_SIZE * num_points // MPU_DATA_JSON_ARR_SIZE bytes per entry
         + 8;                                  // extra 8 bytes at end for safety
-    if (doc_size > ESP.getFreeHeap()) {
+    if (doc_size > ESP.getMaxAllocHeap()) {
         log_e("JSON doc too big! %lu > %lu", doc_size, ESP.getFreeHeap());
         return req->send(507);
     }
@@ -143,7 +191,7 @@ send_jsonified_data_file(String filename, AsyncWebServerRequest* req)
     size_t buf_size = measureJson(doc);
     auto* buf = (char*)malloc(buf_size);
     if (!buf) {
-        log_e("JSON doc too big! %lu > %lu", buf_size, ESP.getFreeHeap());
+        log_e("JSON doc too big! %lu > %lu", buf_size, ESP.getMaxAllocHeap());
         return req->send(507);
     }
 
@@ -155,6 +203,7 @@ send_jsonified_data_file(String filename, AsyncWebServerRequest* req)
             // index equals the amount of bytes that have been already sent
             // You will be asked for more data until 0 is returned
             // Keep in mind that you can not delay or yield waiting for more data!
+
             size_t available = buf_size - idx;
             size_t to_copy = min(available, len);
 
@@ -173,6 +222,7 @@ send_jsonified_data_file(String filename, AsyncWebServerRequest* req)
     req->send(res);
 
     log_i("Successfully sent data file");
+#endif
 }
 
 bool

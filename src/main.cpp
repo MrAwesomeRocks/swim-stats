@@ -270,6 +270,9 @@ loop()
 
     // read a packet from FIFO
     if (mpu_data_available()) { // Get the Latest packet
+        // Set timestamp ASAP
+        mpu_data.time = millis();
+
         // Get yaw, pitch, and roll
         mpu_get_ypr(mpu_data.ypr);
 

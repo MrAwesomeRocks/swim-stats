@@ -80,6 +80,9 @@ mpu_data_t::to_json()
     gyro_json.add(gyro.y);
     gyro_json.add(gyro.z);
 
+    // Time
+    doc["time"] = time;
+
     return doc;
 }
 
@@ -168,7 +171,7 @@ data_clear_recordings()
         }
     }
 
-    log_d("Deleting recordings direcotry");
+    log_d("Deleting recordings directory");
     rec_dir.close();
     return LittleFS.rmdir("/recs");
 }
